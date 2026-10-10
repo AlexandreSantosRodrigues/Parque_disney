@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="description" content="Mapa do Magic Kingdom com localização em tempo real para testar de qualquer lugar." />
+  <title>ParkPath — mapa do Magic Kingdom</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main id="app">
+    <div id="map" aria-label="Mapa interativo"></div>
+
+    <header class="topbar">
+      <div class="brand">ParkPath</div>
+      <div id="placeBadge" class="place-badge" title="Localização atual">
+        <span class="place-dot"></span>
+        <span id="placeName">Localizando…</span>
+      </div>
+    </header>
+
+    <section id="gpsCard" class="gps-card">
+      <div><strong id="gpsState">Buscando GPS…</strong></div>
+      <div id="parkState" class="park-state">Mapa do Magic Kingdom</div>
+      <div class="gps-meta">
+        <span id="accuracyText">Precisão: —</span>
+        <span id="speedText">Velocidade: —</span>
+      </div>
+      <a class="geocode-credit" href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener noreferrer">Nomes de locais: OpenStreetMap/Nominatim</a>
+    </section>
+
+    <div class="controls">
+      <button id="parkBtn" class="map-btn park-btn" title="Ver Magic Kingdom" aria-label="Ver Magic Kingdom">🏰</button>
+      <button id="followBtn" class="map-btn active" aria-pressed="true" title="Acompanhar meu movimento" aria-label="Acompanhar meu movimento">◎</button>
+      <button id="locateBtn" class="map-btn" title="Ir para minha localização" aria-label="Ir para minha localização">⌖</button>
+    </div>
+    <div id="mapNotice" class="map-notice" role="status">Permita a localização para testar o mapa onde você está.</div>
+
+    <div id="permissionPanel" class="permission-panel hidden">
+      <h1>Ativar localização</h1>
+      <p>Permita o acesso para acompanhar seu movimento. Você pode explorar o Magic Kingdom mesmo sem GPS.</p>
+      <button id="retryBtn">Usar minha localização</button>
+      <button id="exploreBtn" class="secondary-btn">Explorar Magic Kingdom</button>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="./app.js"></script>
+</body>
+</html>
