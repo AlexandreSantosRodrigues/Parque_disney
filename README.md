@@ -13,12 +13,16 @@ Primeiro MVP do ParkPath focado em mapa do Magic Kingdom e geolocalização em m
 - direção de movimento quando o navegador fornece `heading`;
 - modo de acompanhamento automático do usuário;
 - botões para ir à posição real ou voltar ao Magic Kingdom;
+- busca e seleção de cinco atrações no mapa;
+- distância em linha reta até a atração selecionada quando o GPS está preciso na região do parque;
 - nome aproximado de bairro/cidade no canto superior;
 - geocodificação reversa limitada por distância e tempo para reduzir consultas.
 
 ## Como testar
 
 Abra o endereço HTTPS no celular e permita o acesso à localização. O mapa começará no Magic Kingdom e irá à sua posição quando o GPS responder. Toque em 🏰 para explorar o parque e em ⌖ para retornar à posição real. O botão ◎ liga e desliga o acompanhamento enquanto você caminha.
+
+Toque nos marcadores numerados ou use a busca para ver Space Mountain, Haunted Mansion, Big Thunder Mountain Railroad, Seven Dwarfs Mine Train e Pirates of the Caribbean. Os pontos são coordenadas aproximadas das atrações fornecidas por OpenStreetMap via Queue Times; **não identificam as entradas**. A distância é em linha reta, apenas quando você estiver perto do parque com precisão de GPS suficiente.
 
 Para testar movimento de verdade, caminhe alguns metros ao ar livre com a página aberta. O ponto deve se deslocar e o mapa deve acompanhá-lo enquanto o botão `◎` estiver ativo.
 
@@ -30,4 +34,6 @@ Este MVP usa os tiles públicos do OpenStreetMap apenas para prototipagem e test
 
 A geocodificação reversa usa Nominatim público com consultas espaçadas. O GPS continua funcionando independentemente da geocodificação.
 
-Ainda não há rotas a pé, atrações próprias, filas ou simulação de localização. O botão do parque só move a câmera; o ponto azul sempre representa o GPS real.
+Ainda não há rotas a pé, posições verificadas de entradas, filas ou simulação de localização. O botão do parque só move a câmera; o ponto azul sempre representa o GPS real.
+
+Fontes dos cinco pontos: `https://queue-times.com/parks/6/rides/{138,140,130,129,137}`. A posição de cada atração deve ser conferida em campo antes do uso para navegação.

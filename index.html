@@ -22,6 +22,12 @@
       </div>
     </header>
 
+    <section class="search-box" aria-label="Buscar atrações do Magic Kingdom">
+      <label for="attractionSearch">Atrações</label>
+      <input id="attractionSearch" type="search" placeholder="Buscar atração no mapa" autocomplete="off" />
+      <div id="searchResults" class="search-results" role="listbox" aria-label="Resultados da busca"></div>
+    </section>
+
     <section id="gpsCard" class="gps-card">
       <div><strong id="gpsState">Buscando GPS…</strong></div>
       <div id="parkState" class="park-state">Mapa do Magic Kingdom</div>
@@ -38,6 +44,15 @@
       <button id="locateBtn" class="map-btn" title="Ir para minha localização" aria-label="Ir para minha localização">⌖</button>
     </div>
     <div id="mapNotice" class="map-notice" role="status">Permita a localização para testar o mapa onde você está.</div>
+
+    <section id="attractionCard" class="attraction-card hidden" aria-live="polite">
+      <button id="closeAttraction" class="close-attraction" aria-label="Fechar atração">×</button>
+      <div class="card-eyebrow">Magic Kingdom · <span id="attractionArea"></span></div>
+      <h2 id="attractionName"></h2>
+      <p id="attractionDistance"></p>
+      <small>Marcador aproximado da atração; não indica a entrada ou uma rota a pé.</small>
+      <a id="attractionSource" class="attraction-source" target="_blank" rel="noopener noreferrer">Fonte do ponto</a>
+    </section>
 
     <div id="permissionPanel" class="permission-panel hidden">
       <h1>Ativar localização</h1>

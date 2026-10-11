@@ -7,6 +7,16 @@ const CONFIG = {
   reverseEndpoint: 'https://nominatim.openstreetmap.org/reverse'
 };
 
+// Coordenadas aproximadas das atrações (OSM via Queue Times), não das entradas.
+// https://queue-times.com/parks/6/rides/{id}
+const ATTRACTIONS = [
+  { id: 138, name: 'Space Mountain', area: 'Tomorrowland', lat: 28.4191, lon: -81.5772 },
+  { id: 140, name: 'Haunted Mansion', area: 'Liberty Square', lat: 28.4209, lon: -81.5829 },
+  { id: 130, name: 'Big Thunder Mountain Railroad', area: 'Frontierland', lat: 28.4202, lon: -81.5844 },
+  { id: 129, name: 'Seven Dwarfs Mine Train', area: 'Fantasyland', lat: 28.4206, lon: -81.5800 },
+  { id: 137, name: 'Pirates of the Caribbean', area: 'Adventureland', lat: 28.4177, lon: -81.5848 }
+];
+
 const map = L.map('map', {
   zoomControl: false,
   preferCanvas: true
@@ -29,6 +39,14 @@ const followBtn = document.getElementById('followBtn');
 const locateBtn = document.getElementById('locateBtn');
 const parkBtn = document.getElementById('parkBtn');
 const exploreBtn = document.getElementById('exploreBtn');
+const attractionSearch = document.getElementById('attractionSearch');
+const searchResults = document.getElementById('searchResults');
+const attractionCard = document.getElementById('attractionCard');
+const attractionName = document.getElementById('attractionName');
+const attractionArea = document.getElementById('attractionArea');
+const attractionDistance = document.getElementById('attractionDistance');
+const attractionSource = document.getElementById('attractionSource');
+const closeAttraction = document.getElementById('closeAttraction');
 
 let watchId = null;
 let userMarker = null;
@@ -40,6 +58,97 @@ let selectedView = 'user';
 let lastReverse = { lat: null, lon: null, time: 0 };
 let reverseInFlight = false;
 let reverseController = null;
+let selectedAttraction = null;
+const attractionMarkers = new Map();
+
+function attractionIcon(number, selected = false) {
+  return L.divIcon({
+    className: 'attraction-icon',
+    html: `<div class="attraction-pin${selected ? ' selected' : ''}">${number}</div>`,
+    iconSize: [25, 25], iconAnchor: [12, 12]
+  });
+}
+
+function updateAttractionDistance() {
+  if (!selectedAttraction) return;
+  const parkDistance = latestPosition
+    ? metersBetween(latestPosition.lat, latestPosition.lon, ...CONFIG.parkCenter)
+    : Infinity;
+  if (parkDistance >= 1500 || latestPosition.accuracy > 150) {
+    attractionDistance.textContent = 'Distância disponível quando o GPS estiver preciso na região do parque.';
+    return;
+  }
+  const distance = metersBetween(latestPosition.lat, latestPosition.lon,
+    selectedAttraction.lat, selectedAttraction.lon);
+  attractionDistance.textContent = `${Math.round(distance)} m em linha reta da sua posição · não é distância a pé`;
+}
+
+function selectAttraction(attraction) {
+  selectedAttraction = attraction;
+  selectedView = 'attraction';
+  setFollow(false);
+  attractionName.textContent = attraction.name;
+  attractionArea.textContent = attraction.area;
+  attractionSource.href = `https://queue-times.com/parks/6/rides/${attraction.id}`;
+  attractionCard.classList.remove('hidden');
+  document.body.classList.add('has-selection');
+  updateAttractionDistance();
+  for (const [id, marker] of attractionMarkers) {
+    marker.setIcon(attractionIcon(ATTRACTIONS.findIndex(item => item.id === id) + 1, id === attraction.id));
+  }
+  map.flyTo([attraction.lat, attraction.lon], 18, { duration: 0.7 });
+  attractionSearch.value = '';
+  searchResults.classList.remove('visible');
+}
+
+function renderSearch(query) {
+  const normalized = query.trim().toLocaleLowerCase('pt-BR');
+  const matches = ATTRACTIONS.filter(item =>
+    !normalized || `${item.name} ${item.area}`.toLocaleLowerCase('pt-BR').includes(normalized));
+  searchResults.replaceChildren();
+  if (matches.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-result';
+    empty.textContent = 'Nenhuma atração encontrada nesta versão.';
+    searchResults.append(empty);
+  }
+  for (const item of matches) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.setAttribute('role', 'option');
+    const name = document.createElement('strong');
+    name.textContent = item.name;
+    const area = document.createElement('small');
+    area.textContent = item.area;
+    button.append(name, area);
+    button.addEventListener('click', () => { selectAttraction(item); attractionSearch.blur(); });
+    searchResults.append(button);
+  }
+  searchResults.classList.add('visible');
+}
+
+ATTRACTIONS.forEach((item, index) => {
+  const marker = L.marker([item.lat, item.lon], { icon: attractionIcon(index + 1), title: item.name, alt: item.name })
+    .addTo(map).on('click', () => selectAttraction(item));
+  attractionMarkers.set(item.id, marker);
+});
+
+attractionSearch.addEventListener('focus', () => renderSearch(attractionSearch.value));
+attractionSearch.addEventListener('input', () => renderSearch(attractionSearch.value));
+attractionSearch.addEventListener('keydown', event => {
+  if (event.key === 'Escape') { searchResults.classList.remove('visible'); attractionSearch.blur(); }
+});
+document.addEventListener('pointerdown', event => {
+  if (!event.target.closest('.search-box')) searchResults.classList.remove('visible');
+});
+closeAttraction.addEventListener('click', () => {
+  selectedAttraction = null;
+  attractionCard.classList.add('hidden');
+  document.body.classList.remove('has-selection');
+  for (const [id, marker] of attractionMarkers) {
+    marker.setIcon(attractionIcon(ATTRACTIONS.findIndex(item => item.id === id) + 1));
+  }
+});
 
 function updateParkState(lat, lon) {
   // Aproximação apenas para informar contexto; não delimita o perímetro oficial.
@@ -141,6 +250,7 @@ function updateMarkerHeading(heading) {
 function onPosition(position) {
   const { latitude: lat, longitude: lon, accuracy, speed, heading } = position.coords;
   latestPosition = { lat, lon, accuracy, speed, heading, timestamp: position.timestamp };
+  updateAttractionDistance();
   updateParkState(lat, lon);
   const nearbyPark = parkLabel(lat, lon, accuracy);
   if (nearbyPark) placeName.textContent = nearbyPark;

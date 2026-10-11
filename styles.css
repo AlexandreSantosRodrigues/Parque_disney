@@ -29,6 +29,30 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
+.search-box {
+  position: absolute;
+  z-index: 1100;
+  top: calc(max(14px, env(safe-area-inset-top)) + 59px);
+  left: 14px;
+  width: min(360px, calc(100vw - 28px));
+  border-radius: 16px;
+  background: rgba(255,255,255,.97);
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+.search-box label { display: none; }
+.search-box input {
+  width: 100%; height: 46px; padding: 0 15px;
+  border: 0; outline: 0; border-radius: 16px;
+  background: transparent; color: var(--text); font: inherit; font-size: 14px;
+}
+.search-box:focus-within { outline: 2px solid #1677ff; }
+.search-results { display: none; max-height: 220px; overflow-y: auto; border-top: 1px solid #e7e9ec; }
+.search-results.visible { display: block; }
+.search-results button { display: block; width: 100%; padding: 11px 15px; border: 0; border-bottom: 1px solid #f0f1f2; background: transparent; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
+.search-results button:hover, .search-results button:focus-visible { background: #eef4ff; }
+.search-results small { display: block; color: var(--muted); margin-top: 2px; }
+.search-results .empty-result { padding: 12px 15px; color: var(--muted); font-size: 13px; }
 .brand {
   pointer-events: auto;
   background: var(--panel);
@@ -101,7 +125,7 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
 .map-notice {
   position: absolute;
   z-index: 900;
-  top: calc(max(14px, env(safe-area-inset-top)) + 62px);
+  top: calc(max(14px, env(safe-area-inset-top)) + 116px);
   left: 14px;
   max-width: min(360px, calc(100vw - 28px));
   padding: 9px 12px;
@@ -112,6 +136,27 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
   font-size: 12px;
 }
 .map-notice.hidden { display: none; }
+
+.attraction-card {
+  position: absolute; z-index: 1050;
+  left: 14px; right: 14px; bottom: max(14px, env(safe-area-inset-bottom));
+  max-width: 500px; padding: 16px 42px 16px 17px;
+  border-radius: 20px; background: rgba(255,255,255,.98);
+  color: var(--text); box-shadow: 0 16px 48px rgba(0,0,0,.25);
+}
+.attraction-card.hidden { display: none; }
+.attraction-card h2 { font-size: 18px; line-height: 1.15; margin: 5px 0 7px; }
+.attraction-card p { font-size: 13px; margin: 0 0 7px; }
+.attraction-card small { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
+.attraction-source { display: inline-block; margin-top: 6px; color: #225d9e; font-size: 11px; }
+.card-eyebrow { color: #395678; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.close-attraction { position: absolute; right: 12px; top: 9px; border: 0; background: transparent; font-size: 26px; cursor: pointer; color: #444; }
+.has-selection .gps-card, .has-selection .controls { bottom: calc(max(14px, env(safe-area-inset-bottom)) + 146px); }
+.has-selection .leaflet-control-attribution { bottom: 151px; }
+
+.attraction-icon { background: transparent; border: 0; }
+.attraction-pin { width: 25px; height: 25px; border: 3px solid white; border-radius: 50%; background: #182e4b; color: white; display: grid; place-items: center; font-size: 12px; font-weight: 800; box-shadow: 0 2px 9px #0006; }
+.attraction-pin.selected { background: #e07431; transform: scale(1.2); }
 
 .permission-panel {
   position: absolute;
