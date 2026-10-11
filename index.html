@@ -52,6 +52,14 @@
       <p id="attractionDistance"></p>
       <small>Marcador aproximado da atração; não indica a entrada ou uma rota a pé.</small>
       <a id="attractionSource" class="attraction-source" target="_blank" rel="noopener noreferrer">Fonte do ponto</a>
+      <div class="route-actions">
+        <button id="testOriginBtn" type="button">Escolher origem de teste</button>
+        <button id="useGpsBtn" type="button" class="route-quiet hidden">Usar GPS real</button>
+        <button id="routeBtn" type="button">Prévia da rota a pé</button>
+      </div>
+      <p id="routeStatus" class="route-status" role="status">Selecione uma origem no parque para testar a rota daqui.</p>
+      <div id="routeSummary" class="route-summary hidden"></div>
+      <div class="route-credit">Ao pedir a rota, os dois pontos são enviados ao <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noopener noreferrer">OSRM/FOSSGIS</a>. Dados © OpenStreetMap · <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Corrigir o mapa</a></div>
     </section>
 
     <div id="permissionPanel" class="permission-panel hidden">

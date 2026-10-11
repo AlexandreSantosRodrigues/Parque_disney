@@ -47,6 +47,11 @@ const attractionArea = document.getElementById('attractionArea');
 const attractionDistance = document.getElementById('attractionDistance');
 const attractionSource = document.getElementById('attractionSource');
 const closeAttraction = document.getElementById('closeAttraction');
+const testOriginBtn = document.getElementById('testOriginBtn');
+const useGpsBtn = document.getElementById('useGpsBtn');
+const routeBtn = document.getElementById('routeBtn');
+const routeStatus = document.getElementById('routeStatus');
+const routeSummary = document.getElementById('routeSummary');
 
 let watchId = null;
 let userMarker = null;
@@ -60,6 +65,137 @@ let reverseInFlight = false;
 let reverseController = null;
 let selectedAttraction = null;
 const attractionMarkers = new Map();
+let testOrigin = null;
+let testOriginMarker = null;
+let pickingTestOrigin = false;
+let routeLine = null;
+let routeRequest = null;
+let lastRouteRequestAt = 0;
+
+function updateCardClearance() {
+  if (!attractionCard.classList.contains('hidden')) {
+    document.body.style.setProperty('--card-clearance', `${attractionCard.offsetHeight + 12}px`);
+  }
+}
+if ('ResizeObserver' in window) new ResizeObserver(updateCardClearance).observe(attractionCard);
+
+function setRouteStatus(message, isError = false) {
+  routeStatus.textContent = message;
+  routeStatus.classList.toggle('error', isError);
+  requestAnimationFrame(updateCardClearance);
+}
+
+function clearRoute() {
+  routeRequest?.abort();
+  routeRequest = null;
+  if (routeLine) map.removeLayer(routeLine);
+  routeLine = null;
+  routeSummary.classList.add('hidden');
+  routeSummary.textContent = '';
+  routeBtn.disabled = false;
+}
+
+function availableOrigin() {
+  if (testOrigin) return { ...testOrigin, type: 'test' };
+  if (!latestPosition || latestPosition.accuracy > 100 ||
+      metersBetween(latestPosition.lat, latestPosition.lon, ...CONFIG.parkCenter) > 1500) return null;
+  return { lat: latestPosition.lat, lon: latestPosition.lon, type: 'gps' };
+}
+
+function setTestOrigin(lat, lon) {
+  testOrigin = { lat, lon };
+  if (!testOriginMarker) {
+    testOriginMarker = L.marker([lat, lon], {
+      icon: L.divIcon({ className: 'attraction-icon', html: '<div class="test-origin-pin"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }),
+      title: 'Origem de teste (não é o GPS)'
+    }).addTo(map);
+  } else testOriginMarker.setLatLng([lat, lon]);
+  useGpsBtn.classList.remove('hidden');
+  pickingTestOrigin = false;
+  testOriginBtn.textContent = 'Mudar origem de teste';
+  clearRoute();
+  setRouteStatus('Origem simulada no mapa. Toque em “Prévia da rota a pé”.');
+}
+
+testOriginBtn.addEventListener('click', () => {
+  pickingTestOrigin = true;
+  setRouteStatus('Toque em um caminho dentro do Magic Kingdom para marcar a origem de teste.');
+});
+useGpsBtn.addEventListener('click', () => {
+  testOrigin = null;
+  pickingTestOrigin = false;
+  if (testOriginMarker) map.removeLayer(testOriginMarker);
+  testOriginMarker = null;
+  useGpsBtn.classList.add('hidden');
+  testOriginBtn.textContent = 'Escolher origem de teste';
+  clearRoute();
+  setRouteStatus(availableOrigin()
+    ? 'GPS real selecionado. Toque em “Prévia da rota a pé”.'
+    : 'GPS fora do parque ou impreciso. Escolha uma origem de teste no mapa.');
+});
+map.on('click', event => {
+  if (!pickingTestOrigin || !selectedAttraction) return;
+  const { lat, lng: lon } = event.latlng;
+  if (metersBetween(lat, lon, ...CONFIG.parkCenter) > 1500) {
+    setRouteStatus('Escolha uma origem dentro da região do Magic Kingdom.', true);
+    return;
+  }
+  setTestOrigin(lat, lon);
+});
+
+routeBtn.addEventListener('click', async () => {
+  if (!selectedAttraction) return;
+  const origin = availableOrigin();
+  if (!origin) {
+    setRouteStatus('Para testar do Brasil, toque em “Escolher origem de teste” e depois em um caminho do parque.', true);
+    return;
+  }
+  if (Date.now() - lastRouteRequestAt < 1500) {
+    setRouteStatus('Aguarde um instante antes de consultar outra rota.');
+    return;
+  }
+  clearRoute();
+  const destination = selectedAttraction;
+  const controller = new AbortController();
+  routeRequest = controller;
+  lastRouteRequestAt = Date.now();
+  routeBtn.disabled = true;
+  setRouteStatus('Consultando caminhos para pedestres…');
+  const timeout = setTimeout(() => controller.abort(), 12000);
+  try {
+    const points = `${origin.lon},${origin.lat};${destination.lon},${destination.lat}`;
+    const url = `https://routing.openstreetmap.de/routed-foot/route/v1/driving/${points}?overview=full&geometries=geojson&steps=false`;
+    const response = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (routeRequest !== controller) return;
+    const route = data.routes?.[0];
+    const pointsOnRoute = route?.geometry?.coordinates;
+    if (data.code !== 'Ok' || !Array.isArray(pointsOnRoute) || pointsOnRoute.length < 2 ||
+        !Number.isFinite(route.distance) || route.distance < 25 || route.distance > 6000 ||
+        !pointsOnRoute.every(point => Array.isArray(point) && point.length >= 2 &&
+          Number.isFinite(point[0]) && Number.isFinite(point[1]) &&
+          metersBetween(point[1], point[0], ...CONFIG.parkCenter) < 1800) ||
+        (data.waypoints?.[0]?.distance ?? Infinity) > 100 ||
+        (data.waypoints?.[1]?.distance ?? Infinity) > 150) {
+      throw new Error('Rota não passou nas verificações de proximidade e perímetro');
+    }
+    const latLngs = pointsOnRoute.map(([lon, lat]) => [lat, lon]);
+    routeLine = L.polyline(latLngs, { color: '#e07431', weight: 6, opacity: .9 }).addTo(map);
+    map.fitBounds(routeLine.getBounds(), { paddingTopLeft: [25, 135], paddingBottomRight: [35, attractionCard.offsetHeight + 35], maxZoom: 18 });
+    routeSummary.textContent = `${(route.distance / 1000).toFixed(2).replace('.', ',')} km pela malha OSM · origem ${origin.type === 'test' ? 'de teste' : 'GPS real'}. A entrada e possíveis bloqueios ainda não foram verificados.`;
+    routeSummary.classList.remove('hidden');
+    setRouteStatus('Prévia experimental de trajeto a pé. Confira as placas e o aplicativo oficial no parque.');
+  } catch (error) {
+    if (routeRequest !== controller) return;
+    setRouteStatus(error.name === 'AbortError'
+      ? 'A consulta demorou demais. Tente novamente.'
+      : 'Não foi possível obter uma rota a pé válida para esses pontos. Tente outra origem.', true);
+  } finally {
+    clearTimeout(timeout);
+    if (routeRequest === controller) { routeRequest = null; routeBtn.disabled = false; }
+  }
+});
 
 function attractionIcon(number, selected = false) {
   return L.divIcon({
@@ -84,6 +220,8 @@ function updateAttractionDistance() {
 }
 
 function selectAttraction(attraction) {
+  clearRoute();
+  pickingTestOrigin = false;
   selectedAttraction = attraction;
   selectedView = 'attraction';
   setFollow(false);
@@ -93,6 +231,10 @@ function selectAttraction(attraction) {
   attractionCard.classList.remove('hidden');
   document.body.classList.add('has-selection');
   updateAttractionDistance();
+  setRouteStatus(testOrigin
+    ? 'Origem de teste selecionada. Toque em “Prévia da rota a pé”.'
+    : 'Escolha uma origem de teste no parque ou use o GPS real quando estiver lá.');
+  requestAnimationFrame(updateCardClearance);
   for (const [id, marker] of attractionMarkers) {
     marker.setIcon(attractionIcon(ATTRACTIONS.findIndex(item => item.id === id) + 1, id === attraction.id));
   }
@@ -142,6 +284,8 @@ document.addEventListener('pointerdown', event => {
   if (!event.target.closest('.search-box')) searchResults.classList.remove('visible');
 });
 closeAttraction.addEventListener('click', () => {
+  clearRoute();
+  pickingTestOrigin = false;
   selectedAttraction = null;
   attractionCard.classList.add('hidden');
   document.body.classList.remove('has-selection');
