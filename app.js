@@ -2,8 +2,8 @@ const CONFIG = {
   parkCenter: [28.4195, -81.5812],
   parkZoom: 16,
   followZoom: 18,
-  reverseMinDistanceMeters: 250,
-  reverseMinIntervalMs: 60_000,
+  reverseMinDistanceMeters: 350,
+  reverseMinIntervalMs: 120_000,
   reverseEndpoint: 'https://nominatim.openstreetmap.org/reverse'
 };
 
@@ -423,7 +423,7 @@ function onPosition(position) {
       map.setView([lat, lon], CONFIG.followZoom, { animate: false });
       hasCenteredOnce = true;
     } else {
-      map.panTo([lat, lon], { animate: true, duration: 0.6, easeLinearity: 0.25 });
+      if (metersBetween(map.getCenter().lat, map.getCenter().lng, lat, lon) >= 5) map.panTo([lat, lon], { animate: true, duration: 0.6, easeLinearity: 0.25 });
     }
   }
 
