@@ -306,3 +306,21 @@ html,body,#app,#map{height:100%;height:100dvh}
  .route-planner.is-picking{max-height:190px;max-height:min(190px,33svh)}
  .route-planner.is-picking .planner-top h2{font-size:20px}
 }
+
+
+/* V5: tamanho efetivo obrigatório, inclusive em telas estreitas. */
+@media screen {
+  #app .controls { display:grid; grid-template-columns:repeat(2,144px) !important; gap:12px !important; right:12px !important; bottom:calc(12px + env(safe-area-inset-bottom)) !important; }
+  #app .controls .map-btn { box-sizing:border-box !important; width:144px !important; min-width:144px !important; max-width:144px !important; height:144px !important; min-height:144px !important; max-height:144px !important; padding:12px !important; }
+  #app .controls .control-icon { font-size:56px !important; }
+  #app .controls .control-label { font-size:20px !important; }
+  #app .topbar .brand { box-sizing:border-box !important; min-width:144px !important; min-height:144px !important; font-size:23px !important; padding:14px !important; }
+  #app .topbar .place-badge { box-sizing:border-box !important; min-width:144px !important; min-height:144px !important; font-size:19px !important; padding:14px !important; max-width:calc(100vw - 175px) !important; white-space:normal !important; }
+  #app .search-box { top:calc(max(12px,env(safe-area-inset-top)) + 155px) !important; width:min(360px,calc(100vw - 24px)) !important; min-height:144px !important; display:flex !important; align-items:center !important; }
+  #app .search-box input { min-height:144px !important; font-size:20px !important; }
+  #app .gps-card { top:auto !important; bottom:calc(12px + env(safe-area-inset-bottom)) !important; left:12px !important; min-width:144px !important; width:min(288px,calc(100vw - 180px)) !important; min-height:144px !important; padding:15px !important; }
+  #app .gps-card strong { font-size:18px !important; }
+  #app .gps-card .park-state, #app .gps-card .gps-meta { font-size:15px !important; }
+  #app .gps-card .geocode-credit { font-size:12px !important; }
+  #app .map-notice { top:315px !important; }
+}
