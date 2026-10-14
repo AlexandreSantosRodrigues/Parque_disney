@@ -203,20 +203,6 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
   .gps-meta { flex-wrap: wrap; gap: 4px 10px; }
 }
 
-/* Botões grandes no celular: única mudança visual na versão restaurada. */
-@media (max-width: 560px) {
-  .controls { gap: 12px; }
-  .map-btn {
-    width: 72px;
-    height: 72px;
-    border-radius: 20px;
-    font-size: 34px;
-    touch-action: manipulation;
-  }
-  .park-btn { font-size: 30px; }
-}
-
-
 /* ParkPath v4 — controles ampliados e planejador A → B em qualquer lugar */
 html,body,#app,#map{height:100%;height:100dvh}
 .topbar{top:max(12px,env(safe-area-inset-top));left:12px;right:12px;align-items:flex-start;gap:8px}
@@ -285,11 +271,7 @@ html,body,#app,#map{height:100%;height:100dvh}
  .map-notice{top:calc(max(12px,env(safe-area-inset-top)) + 295px)}
  .permission-panel{bottom:max(20px,env(safe-area-inset-bottom));max-height:65dvh;overflow-y:auto}
 }
-@media(max-height:680px){
- .route-planner{max-height:72dvh;max-height:72svh}
- .controls{grid-template-columns:repeat(2,min(27vw,112px))}
- .map-btn{width:min(27vw,112px);height:min(27vw,112px)}
-}
+
 
 /* Seleção de pontos: painel compacto mantém mapa acessível */
 .planner-open .permission-panel{display:none!important}
@@ -308,19 +290,20 @@ html,body,#app,#map{height:100%;height:100dvh}
 }
 
 
-/* V5: tamanho efetivo obrigatório, inclusive em telas estreitas. */
+
+/* Dimensões aprovadas: 144px, sem cascata de overrides conflitantes. */
 @media screen {
-  #app .controls { display:grid; grid-template-columns:repeat(2,144px) !important; gap:12px !important; right:12px !important; bottom:calc(12px + env(safe-area-inset-bottom)) !important; }
-  #app .controls .map-btn { box-sizing:border-box !important; width:144px !important; min-width:144px !important; max-width:144px !important; height:144px !important; min-height:144px !important; max-height:144px !important; padding:12px !important; }
-  #app .controls .control-icon { font-size:56px !important; }
-  #app .controls .control-label { font-size:20px !important; }
-  #app .topbar .brand { box-sizing:border-box !important; min-width:144px !important; min-height:144px !important; font-size:23px !important; padding:14px !important; }
-  #app .topbar .place-badge { box-sizing:border-box !important; min-width:144px !important; min-height:144px !important; font-size:19px !important; padding:14px !important; max-width:calc(100vw - 175px) !important; white-space:normal !important; }
-  #app .search-box { top:calc(max(12px,env(safe-area-inset-top)) + 155px) !important; width:min(360px,calc(100vw - 24px)) !important; min-height:144px !important; display:flex !important; align-items:center !important; }
-  #app .search-box input { min-height:144px !important; font-size:20px !important; }
-  #app .gps-card { top:auto !important; bottom:calc(12px + env(safe-area-inset-bottom)) !important; left:12px !important; min-width:144px !important; width:min(288px,calc(100vw - 180px)) !important; min-height:144px !important; padding:15px !important; }
-  #app .gps-card strong { font-size:18px !important; }
-  #app .gps-card .park-state, #app .gps-card .gps-meta { font-size:15px !important; }
-  #app .gps-card .geocode-credit { font-size:12px !important; }
-  #app .map-notice { top:315px !important; }
+ #app .controls{display:grid;grid-template-columns:repeat(2,144px);gap:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom))}
+ #app .controls .map-btn{box-sizing:border-box;width:144px;min-width:144px;max-width:144px;height:144px;min-height:144px;max-height:144px;padding:12px}
+ #app .controls .control-icon{font-size:56px}
+ #app .controls .control-label{font-size:20px}
+ #app .topbar .brand{box-sizing:border-box;min-width:144px;min-height:144px;font-size:23px;padding:14px}
+ #app .topbar .place-badge{box-sizing:border-box;min-width:144px;min-height:144px;font-size:19px;padding:14px;max-width:calc(100vw - 175px);white-space:normal}
+ #app .search-box{top:calc(max(12px,env(safe-area-inset-top)) + 155px);width:min(360px,calc(100vw - 24px));min-height:144px;display:flex;align-items:center}
+ #app .search-box input{min-height:144px;font-size:20px}
+ #app .gps-card{top:auto;bottom:calc(12px + env(safe-area-inset-bottom));left:12px;min-width:144px;width:min(288px,calc(100vw - 180px));min-height:144px;padding:15px}
+ #app .gps-card strong{font-size:18px}
+ #app .gps-card .park-state,#app .gps-card .gps-meta{font-size:15px}
+ #app .gps-card .geocode-credit{font-size:12px}
+ #app .map-notice{top:315px}
 }
