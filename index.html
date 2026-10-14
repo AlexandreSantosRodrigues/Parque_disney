@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#111111" />
-  <meta name="description" content="Mapa do Magic Kingdom com localização em tempo real para testar de qualquer lugar." />
-  <title>ParkPath — mapa do Magic Kingdom</title>
+  <title>ParkPath Maps MVP</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <link rel="stylesheet" href="./styles.css" />
@@ -22,51 +21,23 @@
       </div>
     </header>
 
-    <section class="search-box" aria-label="Buscar atrações do Magic Kingdom">
-      <label for="attractionSearch">Atrações</label>
-      <input id="attractionSearch" type="search" placeholder="Buscar atração no mapa" autocomplete="off" />
-      <div id="searchResults" class="search-results" role="listbox" aria-label="Resultados da busca"></div>
-    </section>
-
     <section id="gpsCard" class="gps-card">
       <div><strong id="gpsState">Buscando GPS…</strong></div>
-      <div id="parkState" class="park-state">Mapa do Magic Kingdom</div>
       <div class="gps-meta">
         <span id="accuracyText">Precisão: —</span>
         <span id="speedText">Velocidade: —</span>
       </div>
-      <a class="geocode-credit" href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener noreferrer">Nomes de locais: OpenStreetMap/Nominatim</a>
     </section>
 
     <div class="controls">
-      <button id="parkBtn" class="map-btn park-btn" title="Ver Magic Kingdom" aria-label="Ver Magic Kingdom">🏰</button>
-      <button id="followBtn" class="map-btn active" aria-pressed="true" title="Acompanhar meu movimento" aria-label="Acompanhar meu movimento">◎</button>
-      <button id="locateBtn" class="map-btn" title="Ir para minha localização" aria-label="Ir para minha localização">⌖</button>
+      <button id="followBtn" class="map-btn active" aria-pressed="true" title="Seguir minha localização">◎</button>
+      <button id="locateBtn" class="map-btn" title="Centralizar em mim">⌖</button>
     </div>
-    <div id="mapNotice" class="map-notice" role="status">Permita a localização para testar o mapa onde você está.</div>
-
-    <section id="attractionCard" class="attraction-card hidden" aria-live="polite">
-      <button id="closeAttraction" class="close-attraction" aria-label="Fechar atração">×</button>
-      <div class="card-eyebrow">Magic Kingdom · <span id="attractionArea"></span></div>
-      <h2 id="attractionName"></h2>
-      <p id="attractionDistance"></p>
-      <small>Marcador aproximado da atração; não indica a entrada ou uma rota a pé.</small>
-      <a id="attractionSource" class="attraction-source" target="_blank" rel="noopener noreferrer">Fonte do ponto</a>
-      <div class="route-actions">
-        <button id="testOriginBtn" type="button">Escolher origem de teste</button>
-        <button id="useGpsBtn" type="button" class="route-quiet hidden">Usar GPS real</button>
-        <button id="routeBtn" type="button">Prévia da rota a pé</button>
-      </div>
-      <p id="routeStatus" class="route-status" role="status">Selecione uma origem no parque para testar a rota daqui.</p>
-      <div id="routeSummary" class="route-summary hidden"></div>
-      <div class="route-credit">Ao pedir a rota, os dois pontos são enviados ao <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noopener noreferrer">OSRM/FOSSGIS</a>. Dados © OpenStreetMap · <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Corrigir o mapa</a></div>
-    </section>
 
     <div id="permissionPanel" class="permission-panel hidden">
       <h1>Ativar localização</h1>
-      <p>Permita o acesso para acompanhar seu movimento. Você pode explorar o Magic Kingdom mesmo sem GPS.</p>
+      <p>O ParkPath usa sua localização enquanto esta página estiver aberta para acompanhar seu movimento no mapa.</p>
       <button id="retryBtn">Usar minha localização</button>
-      <button id="exploreBtn" class="secondary-btn">Explorar Magic Kingdom</button>
     </div>
   </main>
 

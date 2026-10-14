@@ -29,30 +29,6 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
-.search-box {
-  position: absolute;
-  z-index: 1100;
-  top: calc(max(14px, env(safe-area-inset-top)) + 59px);
-  left: 14px;
-  width: min(360px, calc(100vw - 28px));
-  border-radius: 16px;
-  background: rgba(255,255,255,.97);
-  box-shadow: var(--shadow);
-  color: var(--text);
-}
-.search-box label { display: none; }
-.search-box input {
-  width: 100%; height: 46px; padding: 0 15px;
-  border: 0; outline: 0; border-radius: 16px;
-  background: transparent; color: var(--text); font: inherit; font-size: 14px;
-}
-.search-box:focus-within { outline: 2px solid #1677ff; }
-.search-results { display: none; max-height: 220px; overflow-y: auto; border-top: 1px solid #e7e9ec; }
-.search-results.visible { display: block; }
-.search-results button { display: block; width: 100%; padding: 11px 15px; border: 0; border-bottom: 1px solid #f0f1f2; background: transparent; color: var(--text); text-align: left; font: inherit; cursor: pointer; }
-.search-results button:hover, .search-results button:focus-visible { background: #eef4ff; }
-.search-results small { display: block; color: var(--muted); margin-top: 2px; }
-.search-results .empty-result { padding: 12px 15px; color: var(--muted); font-size: 13px; }
 .brand {
   pointer-events: auto;
   background: var(--panel);
@@ -95,9 +71,7 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
   min-width: 185px;
 }
 .gps-card strong { font-size: 13px; }
-.park-state { margin-top: 3px; color: var(--muted); font-size: 11px; }
 .gps-meta { margin-top: 4px; display: flex; gap: 10px; color: var(--muted); font-size: 11px; }
-.geocode-credit { display: block; margin-top: 6px; color: #555e6a; font-size: 10px; }
 
 .controls {
   position: absolute;
@@ -120,54 +94,6 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
   cursor: pointer;
 }
 .map-btn.active { background: #111318; color: #fff; }
-.park-btn { font-size: 20px; }
-
-.map-notice {
-  position: absolute;
-  z-index: 900;
-  top: calc(max(14px, env(safe-area-inset-top)) + 116px);
-  left: 14px;
-  max-width: min(360px, calc(100vw - 28px));
-  padding: 9px 12px;
-  border-radius: 12px;
-  color: #252932;
-  background: rgba(255,255,255,.92);
-  box-shadow: var(--shadow);
-  font-size: 12px;
-}
-.map-notice.hidden { display: none; }
-
-.attraction-card {
-  position: absolute; z-index: 1050;
-  left: 14px; right: 14px; bottom: max(14px, env(safe-area-inset-bottom));
-  max-width: 500px; max-height: 58vh; overflow-y: auto; padding: 16px 42px 14px 17px;
-  border-radius: 20px; background: rgba(255,255,255,.98);
-  color: var(--text); box-shadow: 0 16px 48px rgba(0,0,0,.25);
-}
-.attraction-card.hidden { display: none; }
-.attraction-card h2 { font-size: 18px; line-height: 1.15; margin: 5px 0 7px; }
-.attraction-card p { font-size: 13px; margin: 0 0 7px; }
-.attraction-card small { display: block; color: var(--muted); font-size: 11px; line-height: 1.35; }
-.attraction-source { display: inline-block; margin-top: 6px; color: #225d9e; font-size: 11px; }
-.route-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
-.route-actions button { border: 0; border-radius: 9px; background: #182e4b; color: white; padding: 8px 10px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
-.route-actions button:disabled { opacity: .55; cursor: wait; }
-.route-actions .route-quiet { background: #e9edf2; color: #182e4b; }
-.route-actions .hidden, .route-summary.hidden { display: none; }
-.route-status { margin: 9px 0 0 !important; color: #5d6672; line-height: 1.35; }
-.route-status.error { color: #9b3b2e; }
-.route-summary { margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: #edf3fa; font-size: 12px; line-height: 1.35; }
-.route-credit { margin-top: 8px; color: #606875; font-size: 10px; }
-.route-credit a { color: #225d9e; }
-.card-eyebrow { color: #395678; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-.close-attraction { position: absolute; right: 12px; top: 9px; border: 0; background: transparent; font-size: 26px; cursor: pointer; color: #444; }
-.has-selection .gps-card, .has-selection .controls { bottom: calc(max(14px, env(safe-area-inset-bottom)) + var(--card-clearance, 270px)); }
-.has-selection .leaflet-control-attribution { bottom: var(--card-clearance, 270px); }
-.test-origin-pin { width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; background: #e07431; box-shadow: 0 1px 8px #0008; }
-
-.attraction-icon { background: transparent; border: 0; }
-.attraction-pin { width: 25px; height: 25px; border: 3px solid white; border-radius: 50%; background: #182e4b; color: white; display: grid; place-items: center; font-size: 12px; font-weight: 800; box-shadow: 0 2px 9px #0006; }
-.attraction-pin.selected { background: #e07431; transform: scale(1.2); }
 
 .permission-panel {
   position: absolute;
@@ -186,14 +112,13 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
 .permission-panel h1 { margin: 0 0 8px; font-size: 20px; }
 .permission-panel p { margin: 0 0 14px; color: var(--muted); line-height: 1.45; font-size: 14px; }
 .permission-panel button { width: 100%; border: 0; border-radius: 14px; padding: 13px 16px; font-weight: 800; cursor: pointer; background: #111318; color: #fff; }
-.permission-panel .secondary-btn { margin-top: 8px; background: #eef0f3; color: #111318; }
 
 .user-location-icon { background: transparent; border: 0; }
 .user-dot-wrap { position: relative; width: 34px; height: 34px; display: grid; place-items: center; }
 .user-dot { width: 16px; height: 16px; border-radius: 50%; background: #1677ff; border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.35); position: relative; z-index: 2; }
 .heading-cone { position: absolute; top: -13px; left: 9px; width: 16px; height: 28px; background: rgba(22,119,255,.24); clip-path: polygon(50% 0, 100% 100%, 0 100%); transform-origin: 50% 30px; z-index: 1; }
 
-.leaflet-control-attribution { font-size: 10px !important; background: rgba(255,255,255,.85) !important; }
+.leaflet-control-attribution { font-size: 9px !important; }
 .leaflet-control-zoom { display: none; }
 
 @media (max-width: 560px) {
