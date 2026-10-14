@@ -205,3 +205,91 @@ retryBtn.addEventListener('click', startWatching);
 map.on('dragstart', () => setFollow(false));
 
 startWatching();
+
+
+/* ParkPath v3 — rotas a pé e teste no Magic Kingdom */
+const routeUI = Object.fromEntries(["demoBtn","mapHint","routeCard","routeTitle","clearRouteBtn","routeMetrics","walkTime","walkDistance","routeMessage","routeBtn"].map(id=>[id,document.getElementById(id)]));
+const disneyOrigin={lat:28.41885,lon:-81.58115};
+let disneyTesting=false, walkingDestination=null, walkingMarker=null, walkingLine=null, routeOrigin=null, currentRouteController=null, routeRequestId=0;
+const destinationIcon=L.divIcon({className:"path-destination-icon",html:'<div class="path-pin"></div>',iconSize:[28,28],iconAnchor:[14,28]});
+function walkingDistance(a,b){return metersBetween(a.lat,a.lon,b.lat,b.lon);}
+function clearWalkingRoute(){
+  routeRequestId++;
+  if(currentRouteController) currentRouteController.abort();
+  currentRouteController=null;
+  if(walkingLine)map.removeLayer(walkingLine);
+  if(walkingMarker)map.removeLayer(walkingMarker);
+  walkingLine=null;walkingMarker=null;walkingDestination=null;routeOrigin=null;
+  routeUI.routeCard.classList.add("hidden");
+  routeUI.routeMetrics.classList.add("hidden");
+  routeUI.routeBtn.disabled=false;
+  routeUI.routeBtn.textContent="Calcular caminhada";
+  routeUI.mapHint.textContent="Toque no mapa para escolher seu destino";
+}
+function selectWalkingDestination(lat,lon,title="Destino selecionado"){
+  clearWalkingRoute();
+  walkingDestination={lat,lon};
+  walkingMarker=L.marker([lat,lon],{icon:destinationIcon}).addTo(map);
+  routeUI.routeTitle.textContent=title;
+  routeUI.routeCard.classList.remove("hidden");
+  routeUI.routeMessage.textContent=disneyTesting?"Origem simulada no Magic Kingdom. Não representa seu GPS.":"Rota a partir da sua localização GPS.";
+  routeUI.mapHint.textContent="Destino selecionado";
+}
+function formatWalkDistance(m){return m<1000?`${Math.round(m/10)*10} m`:`${(m/1000).toFixed(2).replace(".",",")} km`;}
+function formatWalkTime(m){let min=Math.max(1,Math.ceil(m/75));return min<60?`~${min} min`:`~${Math.floor(min/60)}h ${min%60}min`;}
+async function calculateWalk(){
+  if(!walkingDestination)return;
+  const origin=disneyTesting?disneyOrigin:latestPosition;
+  if(!origin){routeUI.routeMessage.textContent="GPS não disponível. Ative a localização ou use Teste Disney.";return;}
+  const straight=walkingDistance(origin,walkingDestination);
+  if(straight>25000){routeUI.routeMessage.textContent="Destino muito distante para uma caminhada. Escolha um ponto próximo.";return;}
+  if(straight<2){routeUI.routeMessage.textContent="Você já está perto do destino.";return;}
+  const requestId=++routeRequestId;
+  if(currentRouteController)currentRouteController.abort();
+  currentRouteController=new AbortController();
+  routeUI.routeBtn.disabled=true;
+  routeUI.routeBtn.textContent="Calculando...";
+  routeUI.routeMessage.textContent="Buscando caminhos para pedestres...";
+  routeUI.routeMetrics.classList.add("hidden");
+  if(walkingLine){map.removeLayer(walkingLine);walkingLine=null;}
+  const timeout=setTimeout(()=>currentRouteController?.abort(),14000);
+  try{
+    const url=`https://routing.openstreetmap.de/routed-foot/route/v1/driving/${origin.lon},${origin.lat};${walkingDestination.lon},${walkingDestination.lat}?overview=full&geometries=geojson&steps=false`;
+    const response=await fetch(url,{signal:currentRouteController.signal,headers:{Accept:"application/json"}});
+    if(!response.ok)throw new Error("Routing HTTP "+response.status);
+    const data=await response.json();
+    if(requestId!==routeRequestId)return;
+    const route=data?.routes?.[0];
+    if(data.code!=="Ok"||!Number.isFinite(route?.distance)||!route.geometry?.coordinates?.length)throw new Error("Sem caminho");
+    walkingLine=L.polyline(route.geometry.coordinates.map(([lon,lat])=>[lat,lon]),{color:"#1868de",weight:6,opacity:.9}).addTo(map);
+    routeOrigin={lat:origin.lat,lon:origin.lon};
+    routeUI.walkTime.textContent=formatWalkTime(route.distance);
+    routeUI.walkDistance.textContent=formatWalkDistance(route.distance);
+    routeUI.routeMetrics.classList.remove("hidden");
+    routeUI.routeMessage.textContent="Tempo estimado a 4,5 km/h, sem paradas. O trajeto deve ser conferido no local.";
+    routeUI.routeBtn.textContent="Atualizar caminhada";
+    setFollow(false);
+    map.fitBounds(walkingLine.getBounds(),{paddingTopLeft:[20,80],paddingBottomRight:[20,240],maxZoom:18});
+  }catch(error){
+    if(requestId!==routeRequestId)return;
+    routeUI.routeMessage.textContent="Não foi possível confirmar a rota a pé. Tente novamente. Nenhuma linha reta será mostrada como caminho válido.";
+    routeUI.routeBtn.textContent="Tentar novamente";
+    console.warn("Rota a pé indisponível",error);
+  }finally{
+    clearTimeout(timeout);
+    if(requestId===routeRequestId){currentRouteController=null;routeUI.routeBtn.disabled=false;}
+  }
+}
+routeUI.routeBtn.addEventListener("click",calculateWalk);
+routeUI.clearRouteBtn.addEventListener("click",clearWalkingRoute);
+map.on("click",ev=>selectWalkingDestination(ev.latlng.lat,ev.latlng.lng));
+routeUI.demoBtn.addEventListener("click",()=>{
+  if(disneyTesting){
+    disneyTesting=false;routeUI.demoBtn.textContent="Teste Disney";clearWalkingRoute();placeName.textContent="Localização atual";setFollow(true);
+    if(latestPosition)map.flyTo([latestPosition.lat,latestPosition.lon],CONFIG.followZoom);
+    return;
+  }
+  disneyTesting=true;setFollow(false);routeUI.demoBtn.textContent="Sair do teste";placeName.textContent="Magic Kingdom · Simulação";
+  map.flyTo([28.4195,-81.5808],17);
+  selectWalkingDestination(28.42045,-81.58070,"Seven Dwarfs Mine Train (aprox.)");
+});
