@@ -512,3 +512,257 @@ map.on('dragstart', () => {
 });
 
 startWatching();
+
+
+/* ParkPath v4: planejador independente de país/parque, A → B, GPS opcional. */
+(function initGlobalWalkingPlanner(){
+  const ids=[
+    "plannerOpenBtn","routePlannerPanel","plannerCloseBtn","plannerMessage",
+    "plannerOriginLabel","plannerDestinationLabel","pickOriginBtn",
+    "pickDestinationBtn","useGpsOriginBtn","plannerSearch",
+    "plannerSearchBtn","plannerMetrics","plannerWalkMinutes",
+    "plannerWalkDistance","plannerCalculateBtn","plannerResetBtn",
+    "planAttractionBtn"
+  ];
+  const ui=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)]));
+  if(ids.some(id=>!ui[id])){console.error("Interface de rotas incompleta.");return;}
+  let origin=null,destination=null,picking=null,routeLayer=null;
+  let aMarker=null,bMarker=null,requestController=null,requestSequence=0;
+  let lastSearchAt=0;
+  const WALK_METERS_PER_MINUTE=75; // 4,5 km/h
+  const nameCoords=(p)=>p?.source==="gps"?"Minha localização (GPS)":p?.label||"Ponto escolhido no mapa";
+
+  function message(value,error=false){
+    ui.plannerMessage.textContent=value;
+    ui.plannerMessage.style.color=error?"#ad3434":"#446084";
+  }
+  function showPlanner(){
+    document.body.classList.add("planner-open");
+    ui.routePlannerPanel.classList.remove("hidden");
+    permissionPanel.classList.add("hidden");
+    pickingTestOrigin=false;
+    selectedView="manual";
+    setFollow(false);
+  }
+  function hidePlanner(){
+    picking=null;
+    ui.routePlannerPanel.classList.remove("is-picking");
+    document.body.classList.remove("planner-open");
+    ui.routePlannerPanel.classList.add("hidden");
+  }
+  function forgetLine(){
+    requestSequence++;
+    if(requestController){requestController.abort();requestController=null;}
+    if(routeLayer){map.removeLayer(routeLayer);routeLayer=null;}
+    ui.plannerMetrics.classList.add("hidden");
+    ui.plannerCalculateBtn.disabled=false;
+    ui.plannerCalculateBtn.textContent="Calcular caminhada";
+  }
+  function makePin(p,letter,kind){
+    return L.marker([p.lat,p.lon],{
+      icon:L.divIcon({
+        className:"planner-map-pin",
+        html:'<div class="planner-pin '+kind+'">'+letter+'</div>',
+        iconSize:[36,36],iconAnchor:[18,18]
+      }),
+      title:letter==="A"?"Partida":"Destino"
+    }).addTo(map);
+  }
+  function refreshPoints(){
+    ui.plannerOriginLabel.textContent=origin?nameCoords(origin):"Não selecionada";
+    ui.plannerDestinationLabel.textContent=destination?nameCoords(destination):"Não selecionado";
+    if(aMarker){map.removeLayer(aMarker);aMarker=null;}
+    if(bMarker){map.removeLayer(bMarker);bMarker=null;}
+    const src=origin?.source==="gps"&&latestPosition
+      ? {...origin,lat:latestPosition.lat,lon:latestPosition.lon}:origin;
+    if(src)aMarker=makePin(src,"A","origin");
+    if(destination)bMarker=makePin(destination,"B","destination");
+  }
+  function selectPoint(which,point){
+    forgetLine();
+    if(which==="origin"){origin=point;}else{destination=point;}
+    refreshPoints();
+  }
+  function startPicking(which){
+    showPlanner();
+    picking=which;
+    ui.routePlannerPanel.classList.add("is-picking");
+    message(which==="origin"
+      ?"Toque no mapa para marcar A (partida). Depois marque B (destino)."
+      :"Toque no mapa para marcar B (destino).");
+  }
+  function reset(){
+    picking=null;
+    ui.routePlannerPanel.classList.remove("is-picking");
+    forgetLine();
+    origin=null;destination=null;
+    refreshPoints();
+    message("Escolha A e B em qualquer lugar do mundo. O GPS é opcional.");
+  }
+  function useGpsOrigin(){
+    showPlanner();
+    picking=null;
+    ui.routePlannerPanel.classList.remove("is-picking");
+    if(!("geolocation" in navigator)){
+      message("O navegador não disponibiliza GPS. Marque A diretamente no mapa.",true);
+      return;
+    }
+    message("Obtendo sua localização real…");
+    const accept=(position)=>{
+      latestPosition={
+        lat:position.coords.latitude,lon:position.coords.longitude,
+        accuracy:position.coords.accuracy,speed:position.coords.speed,
+        heading:position.coords.heading,timestamp:position.timestamp
+      };
+      selectPoint("origin",{lat:latestPosition.lat,lon:latestPosition.lon,source:"gps"});
+      message("Partida definida pelo GPS. Agora marque B no mapa.");
+      map.flyTo([latestPosition.lat,latestPosition.lon],Math.max(map.getZoom(),15),{duration:.5});
+    };
+    navigator.geolocation.getCurrentPosition(
+      accept,
+      err=>message("Não foi possível acessar o GPS. Permita localização ou marque A no mapa.",true),
+      {enableHighAccuracy:true,maximumAge:5000,timeout:15000}
+    );
+  }
+  function numericDistance(m){
+    if(m<1000)return Math.round(m/10)*10+" m";
+    return (m/1000).toFixed(2).replace(".",",")+" km";
+  }
+  function walkingDuration(m){
+    const mins=Math.max(1,Math.ceil(m/WALK_METERS_PER_MINUTE));
+    return mins<60?"~"+mins+" min":"~"+Math.floor(mins/60)+" h "+(mins%60)+" min";
+  }
+  async function calculate(){
+    if(!origin||!destination){
+      message("Escolha os dois pontos: A (partida) e B (destino).",true);return;
+    }
+    let from=origin;
+    if(origin.source==="gps"){
+      if(!latestPosition || Date.now()-latestPosition.timestamp>120000){
+        message("GPS desatualizado. Toque em “Usar meu GPS” para atualizar.",true);return;
+      }
+      from={...origin,lat:latestPosition.lat,lon:latestPosition.lon};
+      refreshPoints();
+    }
+    const kmDirect=metersBetween(from.lat,from.lon,destination.lat,destination.lon)/1000;
+    if(kmDirect<.005){message("A partida e o destino estão praticamente no mesmo ponto.");return;}
+    if(kmDirect>25){message("Essa distância é grande demais para o teste de caminhada (limite de 25 km em linha reta).",true);return;}
+    forgetLine();
+    const controller=new AbortController();
+    requestController=controller;
+    const seq=++requestSequence;
+    const timer=setTimeout(()=>controller.abort(),18000);
+    ui.plannerCalculateBtn.disabled=true;
+    ui.plannerCalculateBtn.textContent="Calculando…";
+    message("Buscando caminhos para pedestres na região selecionada…");
+    try{
+      const coordinates=[from,destination].map(p=>p.lon+","+p.lat).join(";");
+      const url="https://routing.openstreetmap.de/routed-foot/route/v1/driving/"+
+        coordinates+"?overview=full&geometries=geojson&steps=false";
+      const response=await fetch(url,{signal:controller.signal,headers:{Accept:"application/json"}});
+      if(!response.ok)throw new Error("HTTP "+response.status);
+      const data=await response.json();
+      if(seq!==requestSequence)return;
+      const route=data?.routes?.[0];
+      const points=route?.geometry?.coordinates;
+      const waypoints=data?.waypoints||[];
+      if(data?.code!=="Ok"||!Number.isFinite(route?.distance)||
+        route.distance<2||!Array.isArray(points)||points.length<2||
+        points.some(c=>!Array.isArray(c)||!Number.isFinite(c[0])||!Number.isFinite(c[1]))||
+        waypoints.some(w=>w.distance>150)){
+        throw new Error("Nenhum caminho a pé confiável");
+      }
+      routeLayer=L.polyline(points.map(([lon,lat])=>[lat,lon]),{
+        color:"#1677ff",weight:7,opacity:.91,lineCap:"round",lineJoin:"round"
+      }).addTo(map);
+      ui.plannerWalkMinutes.textContent=walkingDuration(route.distance);
+      ui.plannerWalkDistance.textContent=numericDistance(route.distance);
+      ui.plannerMetrics.classList.remove("hidden");
+      ui.plannerCalculateBtn.textContent="Atualizar caminhada";
+      message("Rota estimada pela rede de caminhos. Confirme o acesso e possíveis bloqueios antes de caminhar.");
+      const lower=window.innerWidth<=600?Math.min(420,ui.routePlannerPanel.offsetHeight+25):80;
+      map.fitBounds(routeLayer.getBounds(),{
+        paddingTopLeft:[30,90],paddingBottomRight:[30,lower],maxZoom:18,animate:true
+      });
+    }catch(error){
+      if(seq!==requestSequence)return;
+      message(error.name==="AbortError"
+        ?"O serviço de rotas demorou a responder. Tente novamente."
+        :"Não foi possível confirmar um caminho a pé entre os pontos. Selecione outros pontos em ruas ou caminhos mapeados.",true);
+      ui.plannerCalculateBtn.textContent="Tentar novamente";
+      console.warn("Rota ParkPath:",error);
+    }finally{
+      clearTimeout(timer);
+      if(seq===requestSequence){
+        requestController=null;
+        ui.plannerCalculateBtn.disabled=false;
+      }
+    }
+  }
+  async function searchPlace(){
+    const q=ui.plannerSearch.value.trim();
+    if(q.length<3){message("Digite um bairro, cidade ou endereço para buscar.",true);return;}
+    if(Date.now()-lastSearchAt<1500){message("Aguarde um instante antes de outra busca.",true);return;}
+    lastSearchAt=Date.now();
+    ui.plannerSearchBtn.disabled=true;
+    message("Procurando endereço no OpenStreetMap…");
+    try{
+      const url=new URL("https://nominatim.openstreetmap.org/search");
+      url.searchParams.set("q",q);
+      url.searchParams.set("format","jsonv2");
+      url.searchParams.set("limit","1");
+      url.searchParams.set("accept-language","pt-BR");
+      const res=await fetch(url,{headers:{Accept:"application/json"}});
+      if(!res.ok)throw Error("Busca temporariamente indisponível");
+      const items=await res.json();
+      const place=items?.[0];
+      if(!place)throw Error("Nenhum lugar encontrado");
+      showPlanner();
+      map.flyTo([Number(place.lat),Number(place.lon)],16,{duration:.9});
+      message("Local encontrado. Toque em “Marcar A” ou “Marcar B” e depois no ponto desejado no mapa.");
+    }catch(error){
+      message("Não foi possível localizar esse endereço. Você ainda pode navegar pelo mapa manualmente.",true);
+    }finally{ui.plannerSearchBtn.disabled=false;}
+  }
+  ui.plannerOpenBtn.addEventListener("click",()=>{
+    showPlanner();
+    message("Marque A e B no mapa ou use seu GPS para a partida.");
+  });
+  ui.plannerCloseBtn.addEventListener("click",hidePlanner);
+  ui.pickOriginBtn.addEventListener("click",()=>startPicking("origin"));
+  ui.pickDestinationBtn.addEventListener("click",()=>startPicking("destination"));
+  ui.useGpsOriginBtn.addEventListener("click",useGpsOrigin);
+  ui.plannerCalculateBtn.addEventListener("click",calculate);
+  ui.plannerResetBtn.addEventListener("click",reset);
+  ui.plannerSearchBtn.addEventListener("click",searchPlace);
+  ui.plannerSearch.addEventListener("keydown",event=>{
+    if(event.key==="Enter"){event.preventDefault();searchPlace();}
+  });
+  ui.planAttractionBtn.addEventListener("click",()=>{
+    if(!selectedAttraction)return;
+    showPlanner();
+    selectPoint("destination",{
+      lat:selectedAttraction.lat,lon:selectedAttraction.lon,
+      label:selectedAttraction.name+" · ponto aproximado",source:"manual"
+    });
+    message("Destino definido pela atração. Marque a partida A no mapa ou use seu GPS.");
+  });
+  map.on("click",event=>{
+    if(!picking||ui.routePlannerPanel.classList.contains("hidden"))return;
+    const which=picking;
+    const p={lat:event.latlng.lat,lon:event.latlng.lng,
+      label:"Ponto no mapa · "+event.latlng.lat.toFixed(5)+", "+event.latlng.lng.toFixed(5),
+      source:"manual"};
+    selectPoint(which,p);
+    if(which==="origin"&&!destination){
+      picking="destination";
+      message("Partida A definida! Agora toque no mapa para marcar o destino B.");
+    }else{
+      picking=null;
+      ui.routePlannerPanel.classList.remove("is-picking");
+      message(origin&&destination
+        ?"Pontos A e B definidos. Toque em “Calcular caminhada”."
+        :"Ponto selecionado. Defina o outro ponto.");
+    }
+  });
+})();

@@ -215,3 +215,94 @@ body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSyst
   }
   .park-btn { font-size: 30px; }
 }
+
+
+/* ParkPath v4 — controles ampliados e planejador A → B em qualquer lugar */
+html,body,#app,#map{height:100%;height:100dvh}
+.topbar{top:max(12px,env(safe-area-inset-top));left:12px;right:12px;align-items:flex-start;gap:8px}
+.brand{font-size:26px;min-height:76px;padding:19px 22px;border-radius:22px;display:flex;align-items:center}
+.place-badge{font-size:19px;min-height:76px;padding:14px 18px;max-width:min(52vw,380px);border-radius:22px}
+.place-dot{width:13px;height:13px}
+.search-box{top:calc(max(12px,env(safe-area-inset-top)) + 89px);width:min(460px,calc(100vw - 24px))}
+.search-box input{height:62px;font-size:18px}
+.search-results button{font-size:16px;padding:15px}
+.gps-card{top:calc(max(12px,env(safe-area-inset-top)) + 169px);bottom:auto;left:12px;min-width:240px;max-width:min(390px,70vw);padding:15px 18px;border-radius:20px}
+.gps-card strong{font-size:17px}.park-state{font-size:13px}.gps-meta{font-size:13px;flex-wrap:wrap}.geocode-credit{font-size:11px}
+.map-notice{top:calc(max(12px,env(safe-area-inset-top)) + 320px)}
+.controls{display:grid;grid-template-columns:repeat(2,144px);gap:12px;right:max(12px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:1020}
+.map-btn{width:144px;height:144px;border-radius:26px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;font-size:unset;font-weight:800;touch-action:manipulation}
+.map-btn .control-icon{font-size:56px;line-height:1.03}
+.map-btn .control-label{font-size:20px;line-height:1.15}
+.map-btn:focus-visible, .planner-point-actions button:focus-visible, .planner-bottom-actions button:focus-visible{outline:3px solid #1677ff;outline-offset:2px}
+.has-selection .controls{display:none}
+.plan-attraction-btn{display:block;border:0;background:#1677ff;color:#fff;font-weight:800;border-radius:12px;font-size:15px;padding:13px 18px;margin-top:12px;min-height:48px;cursor:pointer}
+.planner-open .controls,.planner-open .gps-card,.planner-open .attraction-card,.planner-open .map-notice{display:none!important}
+.route-planner{position:absolute;z-index:1350;left:14px;bottom:max(12px,env(safe-area-inset-bottom));width:min(490px,calc(100vw - 28px));max-height:min(80dvh,790px);overflow-y:auto;padding:22px;border-radius:25px;background:rgba(255,255,255,.985);box-shadow:0 16px 48px rgba(0,0,0,.26);color:#14223a}
+.route-planner.hidden{display:none}
+.planner-top{display:flex;justify-content:space-between;align-items:start;gap:8px}
+.planner-overline{font-size:11px;font-weight:850;letter-spacing:.08em;color:#587399}
+.planner-top h2{font-size:25px;margin:4px 0 0}
+.planner-close{min-width:53px;min-height:53px;border:0;background:#e7edf5;border-radius:14px;font-size:32px;cursor:pointer;color:#27384e}
+.planner-message{margin:10px 0 15px;color:#446084;font-size:14px;line-height:1.45}
+.planner-point{background:#f1f5fa;border-radius:16px;padding:12px 14px;margin-bottom:10px}
+.planner-point-head{display:flex;align-items:center;gap:11px;min-width:0}
+.planner-point-head>div{display:grid;gap:3px;min-width:0}
+.planner-point-head strong{font-size:15px}
+.planner-point-head span:last-child{font-size:13px;color:#51677f;overflow-wrap:anywhere}
+.planner-circle{width:32px;height:32px;min-width:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:16px;font-weight:800}
+.planner-circle.origin{background:#13a878}.planner-circle.destination{background:#ed7455}
+.planner-point-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.planner-point-actions button,.planner-secondary{border:1px solid #cbd7e6;background:white;color:#17324e;padding:11px 13px;border-radius:12px;min-height:45px;font-size:14px;font-weight:750;cursor:pointer}
+.planner-place-search{margin:14px 0}.planner-place-search label{font-size:13px;font-weight:750;display:block;margin-bottom:8px}
+.planner-search-row{display:flex;gap:8px}
+.planner-search-row input{flex:1;min-width:0;padding:12px;border:1px solid #cbd7e6;border-radius:12px;font:inherit;font-size:15px}
+.planner-search-row button{border:0;border-radius:12px;padding:0 16px;background:#dce8f7;color:#123250;font-weight:800;font-size:14px}
+.planner-place-search small{display:block;color:#667b91;margin-top:6px;font-size:11px}
+.planner-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.planner-metrics.hidden{display:none}
+.planner-metrics>div{background:#e6f0ff;border-radius:14px;padding:13px;display:grid;gap:3px}
+.planner-metrics strong{color:#185cb1;font-size:25px}
+.planner-metrics span{color:#526988;font-size:12px}
+.planner-bottom-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:14px}
+.planner-primary{padding:14px 16px;border:0;border-radius:13px;background:#102844;color:#fff;font-size:16px;font-weight:850;min-height:55px;cursor:pointer}
+.planner-primary:disabled{opacity:.65;cursor:wait}
+.planner-footnote{font-size:11px;color:#6b798e;line-height:1.5;margin:12px 0 0}
+.planner-map-pin{background:transparent;border:0}.planner-pin{width:35px;height:35px;border:4px solid #fff;border-radius:50%;display:grid;place-items:center;font-size:17px;font-weight:800;color:#fff;box-shadow:0 3px 13px #0007}
+.planner-pin.origin{background:#13a878}.planner-pin.destination{background:#ed7455}
+@media(max-width:600px){
+ .brand{font-size:23px;min-height:70px;padding:15px 17px;border-radius:19px}
+ .place-badge{font-size:17px;min-height:70px;padding:12px 14px;max-width:53vw;border-radius:19px}
+ .search-box{top:calc(max(12px,env(safe-area-inset-top)) + 80px)}
+ .search-box input{height:57px;font-size:17px}
+ .gps-card{top:calc(max(12px,env(safe-area-inset-top)) + 149px);width:min(290px,calc(100vw - 24px));max-width:unset}
+ .controls{grid-template-columns:repeat(2,min(36vw,144px));gap:9px;right:10px;bottom:max(12px,env(safe-area-inset-bottom))}
+ .map-btn{width:min(36vw,144px);height:min(36vw,144px);border-radius:23px;gap:3px}
+ .map-btn .control-icon{font-size:clamp(34px,12vw,56px)}
+ .map-btn .control-label{font-size:clamp(14px,4.1vw,20px)}
+ .route-planner{left:0;right:0;bottom:0;width:100%;max-height:66dvh;max-height:66svh;padding:21px 18px calc(20px + env(safe-area-inset-bottom));border-radius:26px 26px 0 0}
+ .planner-top h2{font-size:22px}
+ .planner-point-actions button{font-size:14px}
+ .map-notice{top:calc(max(12px,env(safe-area-inset-top)) + 295px)}
+ .permission-panel{bottom:max(20px,env(safe-area-inset-bottom));max-height:65dvh;overflow-y:auto}
+}
+@media(max-height:680px){
+ .route-planner{max-height:72dvh;max-height:72svh}
+ .controls{grid-template-columns:repeat(2,min(27vw,112px))}
+ .map-btn{width:min(27vw,112px);height:min(27vw,112px)}
+}
+
+/* Seleção de pontos: painel compacto mantém mapa acessível */
+.planner-open .permission-panel{display:none!important}
+.route-planner.is-picking{max-height:min(180px,30dvh);overflow:hidden}
+.route-planner.is-picking .planner-point,
+.route-planner.is-picking .planner-place-search,
+.route-planner.is-picking .planner-metrics,
+.route-planner.is-picking .planner-bottom-actions,
+.route-planner.is-picking .planner-footnote{display:none!important}
+.route-planner.is-picking .planner-message{font-size:16px;font-weight:650;margin-bottom:3px}
+.attraction-card .route-actions,.attraction-card .route-status,
+.attraction-card .route-summary,.attraction-card .route-credit{display:none!important}
+@media(max-width:600px){
+ .route-planner.is-picking{max-height:190px;max-height:min(190px,33svh)}
+ .route-planner.is-picking .planner-top h2{font-size:20px}
+}

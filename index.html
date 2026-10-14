@@ -8,7 +8,7 @@
   <title>ParkPath — mapa do Magic Kingdom</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="./styles.css?v=20261014-botoes-grandes" />
+  <link rel="stylesheet" href="./styles.css?v=parkpath-v4-20261014?v=20261014-botoes-grandes" />
 </head>
 <body>
   <main id="app">
@@ -38,10 +38,11 @@
       <a class="geocode-credit" href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener noreferrer">Nomes de locais: OpenStreetMap/Nominatim</a>
     </section>
 
-    <div class="controls">
-      <button id="parkBtn" class="map-btn park-btn" title="Ver Magic Kingdom" aria-label="Ver Magic Kingdom">🏰</button>
-      <button id="followBtn" class="map-btn active" aria-pressed="true" title="Acompanhar meu movimento" aria-label="Acompanhar meu movimento">◎</button>
-      <button id="locateBtn" class="map-btn" title="Ir para minha localização" aria-label="Ir para minha localização">⌖</button>
+    <div class="controls" aria-label="Controles de navegação">
+      <button id="parkBtn" class="map-btn park-btn" type="button" title="Ir ao Magic Kingdom" aria-label="Ir ao Magic Kingdom"><span class="control-icon">🏰</span><span class="control-label">Disney</span></button>
+      <button id="plannerOpenBtn" class="map-btn" type="button" title="Planejar rota a pé" aria-label="Planejar rota"><span class="control-icon">↗</span><span class="control-label">Rotas</span></button>
+      <button id="followBtn" class="map-btn active" type="button" aria-pressed="true" title="Seguir meus movimentos" aria-label="Seguir meus movimentos"><span class="control-icon">◎</span><span class="control-label">Seguir</span></button>
+      <button id="locateBtn" class="map-btn" type="button" title="Mostrar minha localização" aria-label="Mostrar minha localização"><span class="control-icon">⌖</span><span class="control-label">Meu GPS</span></button>
     </div>
     <div id="mapNotice" class="map-notice" role="status">Permita a localização para testar o mapa onde você está.</div>
 
@@ -52,6 +53,7 @@
       <p id="attractionDistance"></p>
       <small>Marcador aproximado da atração; não indica a entrada ou uma rota a pé.</small>
       <a id="attractionSource" class="attraction-source" target="_blank" rel="noopener noreferrer">Fonte do ponto</a>
+      <button id="planAttractionBtn" class="plan-attraction-btn" type="button">Traçar rota até esta atração</button>
       <div class="route-actions">
         <button id="testOriginBtn" type="button">Escolher origem de teste</button>
         <button id="useGpsBtn" type="button" class="route-quiet hidden">Usar GPS real</button>
@@ -62,6 +64,44 @@
       <div class="route-credit">Ao pedir a rota, os dois pontos são enviados ao <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noopener noreferrer">OSRM/FOSSGIS</a>. Dados © OpenStreetMap · <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Corrigir o mapa</a></div>
     </section>
 
+
+    <section id="routePlannerPanel" class="route-planner hidden" aria-label="Planejador de trajetos a pé">
+      <div class="planner-top">
+        <div><span class="planner-overline">PARKPATH · MAPAS</span><h2>Planejar caminhada</h2></div>
+        <button id="plannerCloseBtn" class="planner-close" type="button" aria-label="Fechar planejador">×</button>
+      </div>
+      <p id="plannerMessage" class="planner-message" role="status">Escolha a partida e o destino em qualquer lugar do mapa.</p>
+      <div class="planner-point">
+        <div class="planner-point-head"><span class="planner-circle origin">A</span><div><strong>Partida</strong><span id="plannerOriginLabel">Não selecionada</span></div></div>
+        <div class="planner-point-actions">
+          <button id="pickOriginBtn" type="button">Marcar A no mapa</button>
+          <button id="useGpsOriginBtn" type="button" class="planner-secondary">Usar meu GPS</button>
+        </div>
+      </div>
+      <div class="planner-point">
+        <div class="planner-point-head"><span class="planner-circle destination">B</span><div><strong>Destino</strong><span id="plannerDestinationLabel">Não selecionado</span></div></div>
+        <div class="planner-point-actions">
+          <button id="pickDestinationBtn" type="button">Marcar B no mapa</button>
+        </div>
+      </div>
+      <div class="planner-place-search">
+        <label for="plannerSearch">Ir para outra cidade ou endereço (opcional)</label>
+        <div class="planner-search-row">
+          <input id="plannerSearch" type="search" placeholder="Ex.: Centro, Duque de Caxias" autocomplete="off">
+          <button id="plannerSearchBtn" type="button">Buscar</button>
+        </div>
+        <small>Depois de localizar o lugar, toque no mapa para definir A ou B.</small>
+      </div>
+      <div id="plannerMetrics" class="planner-metrics hidden">
+        <div><strong id="plannerWalkMinutes">—</strong><span>tempo a pé</span></div>
+        <div><strong id="plannerWalkDistance">—</strong><span>pela rota</span></div>
+      </div>
+      <div class="planner-bottom-actions">
+        <button id="plannerCalculateBtn" class="planner-primary" type="button">Calcular caminhada</button>
+        <button id="plannerResetBtn" class="planner-secondary" type="button">Limpar</button>
+      </div>
+      <p class="planner-footnote">Tempo aproximado a 4,5 km/h sem paradas. Caminhos obtidos por OpenStreetMap/FOSSGIS; acesso, segurança e bloqueios precisam ser confirmados no local.</p>
+    </section>
     <div id="permissionPanel" class="permission-panel hidden">
       <h1>Ativar localização</h1>
       <p>Permita o acesso para acompanhar seu movimento. Você pode explorar o Magic Kingdom mesmo sem GPS.</p>
@@ -71,6 +111,6 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="./app.js"></script>
+  <script src="./app.js?v=parkpath-v4-20261014"></script>
 </body>
 </html>
