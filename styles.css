@@ -409,3 +409,36 @@ html,body,#app,#map{height:100%;height:100dvh}
 #app .queue-foot p{font-size:11px;line-height:1.5;color:#536781}
 #app .queue-foot a{color:#245dab}
 @media(max-width:760px){#app .queue-panel{top:auto;bottom:0;left:0;transform:none;width:100%;max-height:84dvh;border-radius:24px 24px 0 0;padding:18px 14px calc(18px + env(safe-area-inset-bottom))}#app .queue-list{max-height:40dvh}}
+
+
+/* Marcadores dos sete parques: coordenadas e tempos fornecidos pela ThemeParks.wiki */
+.park-ride-marker{background:transparent;border:0;overflow:visible}
+.park-ride-pin{
+  width:60px;min-height:46px;border:2px solid #fff;border-radius:14px;
+  background:#195eb7;color:#fff;box-shadow:0 3px 12px rgba(0,0,0,.35);
+  display:flex;align-items:center;justify-content:center;gap:3px;
+  padding:5px 5px;font:800 13px system-ui;white-space:nowrap
+}
+.park-ride-pin>span{font-size:17px;line-height:1}
+.park-ride-pin b{font-size:12px}
+.park-ride-pin.unknown{background:#415771}
+.park-ride-pin.closed{background:#80533d}
+.park-ride-pin.selected{background:#d15c1c;transform:scale(1.1);box-shadow:0 4px 15px #0007}
+#app .queue-actions{min-width:112px;display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+#app .queue-to-map{
+ border:1px solid #bcd1e8;background:#e8f2ff;color:#145699;
+ border-radius:10px;min-height:37px;padding:8px 10px;
+ font:800 12px system-ui;cursor:pointer;white-space:nowrap
+}
+#app .queue-to-map:hover,#app .queue-to-map:focus-visible{background:#d5e8fd}
+#app .queue-no-point{font-size:11px;color:#6c788a;text-align:right}
+#app .queue-wait{white-space:normal;text-align:right}
+#app .queue-list{max-height:45dvh}
+#app .queue-open-btn{line-height:1.4}
+@media(max-width:760px){
+  #app .queue-to-map{min-height:42px;font-size:13px}
+  #app .queue-actions{min-width:95px}
+  #app .queue-row{align-items:start}
+  #app .queue-list{max-height:42dvh}
+}
+/* As dimensões aprovadas dos controles .map-btn permanecem 144 × 144 px. */

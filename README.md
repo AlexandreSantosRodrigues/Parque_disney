@@ -44,14 +44,20 @@ Referências: [OSRM/FOSSGIS](https://routing.openstreetmap.de/about.html) e [pol
 
 Fontes dos cinco pontos: `https://queue-times.com/parks/6/rides/{138,140,130,129,137}`. A posição de cada atração deve ser conferida em campo antes do uso para navegação.
 
-## Filas Disney — Phase 1
+## Atrações e filas nos sete parques — v2
 
-O botão **Filas Disney** consulta tempos atuais de espera comum (standby) para Magic Kingdom, EPCOT, Hollywood Studios e Animal Kingdom pela API livre e documentada https://api.themeparks.wiki/docs/v1. Os três parques Universal permanecem sem filas nesta etapa.
+A mesma experiência de atrações e tempos de espera se aplica agora a todos os parques que aparecem no seletor: Magic Kingdom, EPCOT, Hollywood Studios, Animal Kingdom, Universal Studios Florida, Islands of Adventure e Epic Universe.
 
-- O tempo vem de queue.STANDBY.waitTime publicado pelo provedor; não é previsão para mais tarde.
-- O estado de operação e lastUpdated são mostrados na lista. Dados com mais de 12 minutos deixam de mostrar número.
-- Atualização no máximo a cada 5 minutos por parque/navegador; busca, classificação e horário da fonte em Orlando.
-- No Magic Kingdom, a ficha dos cinco marcadores mostra a fila quando nome e dado disponível coincidem.
-- Fonte: Powered by ThemeParks.wiki (gratuito com atribuição). Sem API key embutida.
-- Se a API não responder, mostrar indisponível. Os dados podem divergir do My Disney Experience oficial.
-- Verificações estáticas não substituem testes reais de rede, CORS e navegador.
+**Origem dos dados**: [ThemeParks.wiki V1](https://api.themeparks.wiki/docs/v1), endpoints /v1/entity/{parkId}/children (catálogo, identificadores e coordenadas quando disponíveis) e /v1/entity/{parkId}/live (situação de operação e tempos standby).
+
+- Os dados de catálogo são associados aos tempos pelo **UUID da atração**, não pela comparação frágil dos nomes.
+- Apenas atrações com coordenadas publicadas e plausíveis dentro da região do parque recebem um marcador clicável. A coordenada é aproximada e não indica a entrada.
+- Outras atrações que existam no catálogo ou apenas na transmissão live continuam visíveis na lista, mas sem botão para localizá-las no mapa.
+- A pesquisa no mapa usa as atrações cadastradas no parque selecionado. A seleção abre ficha, situação da fila, distância GPS (quando aplicável) e botão de rota a pé.
+- A lista abre em **🎢 Atrações e filas**, com busca, ordenação por menores/maiores tempos e botão **Ver no mapa** para pontos geolocalizados.
+- Minutos = queue.STANDBY.waitTime fornecido pela API, quando status OPERATING, leitura válida e atualizada há **até 12 min**. Fechamento, manutenção, ausência de fila ou dado antigo nunca exibem número como atual.
+- Uma consulta live por parque a cada 5 minutos no máximo, catálogo com cache de 6 horas, carregamento somente para o parque em uso, sem baixar as sete bases simultaneamente.
+- Se o catálogo falhar, preserva os cinco pontos fixos antigos do Magic Kingdom como contingência. Outros parques não recebem pontos fictícios.
+- Créditos e links da ThemeParks.wiki permanecem visíveis; a fonte **não é a API oficial da Disney ou da Universal**. Valide tempos relevantes nos aplicativos dos operadores.
+
+**Testes**: a integração passa por verificações de sintaxe, contratos e dados simulados. Validação visual, conectividade e resposta efetiva da API dependem do navegador com acesso à rede.

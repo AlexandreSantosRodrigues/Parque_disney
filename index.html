@@ -8,7 +8,7 @@
   <title>ParkPath — Disney e Universal Orlando</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="./styles.css?v=disney-queues-v1" />
+  <link rel="stylesheet" href="./styles.css?v=orlando-attractions-v2" />
 </head>
 <body>
   <main id="app">
@@ -50,7 +50,7 @@
           <option value="epic">Epic Universe</option>
         </optgroup>
       </select>
-      <button id="queueOpenBtn" class="queue-open-btn" type="button">⏱ Filas Disney <span id="queueOpenHint">· consultar agora</span></button>
+      <button id="queueOpenBtn" class="queue-open-btn" type="button">🎢 Atrações e filas <span id="queueOpenHint">· consultar agora</span></button>
       <a id="officialParkLink" href="https://disneyworld.disney.go.com/pt-br/destinations/magic-kingdom/" target="_blank" rel="noopener noreferrer">Informações oficiais ↗</a>
     </nav>
     <section class="search-box" aria-label="Buscar atrações do Magic Kingdom">
@@ -79,7 +79,7 @@
 
     <section id="attractionCard" class="attraction-card hidden" aria-live="polite">
       <button id="closeAttraction" class="close-attraction" aria-label="Fechar atração">×</button>
-      <div class="card-eyebrow">Magic Kingdom · <span id="attractionArea"></span></div>
+      <div class="card-eyebrow"><span id="attractionParkName">Magic Kingdom</span> · <span id="attractionArea"></span></div>
       <h2 id="attractionName"></h2>
       <div id="attractionQueueInfo" class="attraction-queue-info" role="status">Fila: aguardando atualização…</div>
       <p id="attractionDistance"></p>
@@ -137,19 +137,19 @@
 
     <section id="queuePanel" class="queue-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="queueHeading">
       <div class="queue-head">
-        <div><small>DISNEY · FILA COMUM</small><h2 id="queueHeading">Estimativas de espera</h2><p id="queueParkHeading">Magic Kingdom</p></div>
+        <div><small>DISNEY E UNIVERSAL · FILA COMUM</small><h2 id="queueHeading">Estimativas de espera</h2><p id="queueParkHeading">Magic Kingdom</p></div>
         <button id="queueCloseBtn" type="button" aria-label="Fechar painel">×</button>
       </div>
       <p id="queueStatus" role="status" class="queue-status">Consultando a fonte…</p>
       <div class="queue-filter">
-        <input id="queueSearch" type="search" placeholder="Buscar atração" aria-label="Buscar atração" autocomplete="off">
+        <input id="queueSearch" type="search" placeholder="Buscar brinquedo ou atração" aria-label="Buscar atração" autocomplete="off">
         <select id="queueSort" aria-label="Ordenar filas"><option value="name">A–Z</option><option value="short">Menor fila</option><option value="long">Maior fila</option></select>
       </div>
       <div id="queueList" class="queue-list" aria-live="polite"></div>
       <div class="queue-foot">
         <button id="queueRefreshBtn" type="button">Atualizar filas</button>
-        <p>Tempo informado para a fila comum (standby), não é previsão futura. Leituras com mais de 12 minutos não são mostradas como atuais.</p>
-        <p><a href="https://www.themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a> · Serviço independente da Disney. Antes de decidir, confira o <a href="https://disneyworld.disney.go.com/guest-services/my-disney-experience/mobile-apps/" target="_blank" rel="noopener noreferrer">My Disney Experience</a>.</p>
+        <p>Atrações com coordenadas informadas pela fonte aparecem no mapa; o ponto pode não corresponder à entrada. Filas comuns (standby) são estimativas atuais, não previsões futuras. Leituras com mais de 12 minutos não mostram números.</p>
+        <p><a href="https://www.themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a> · Fonte independente dos operadores. Confira os aplicativos oficiais <a href="https://disneyworld.disney.go.com/guest-services/my-disney-experience/mobile-apps/" target="_blank" rel="noopener noreferrer">Disney</a> e <a href="https://www.universalorlando.com/web/en/us" target="_blank" rel="noopener noreferrer">Universal</a> antes de decidir.</p>
       </div>
     </section>
     <div id="permissionPanel" class="permission-panel hidden">
@@ -161,7 +161,7 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="./app.js?v=disney-queues-v1"></script>
-  <script src="./queues.js?v=disney-queues-v1"></script>
+  <script src="./app.js?v=orlando-attractions-v2"></script>
+  <script src="./queues.js?v=orlando-attractions-v2"></script>
 </body>
 </html>

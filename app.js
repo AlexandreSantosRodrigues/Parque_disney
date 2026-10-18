@@ -48,6 +48,7 @@ const attractionSearch = document.getElementById('attractionSearch');
 const searchResults = document.getElementById('searchResults');
 const attractionCard = document.getElementById('attractionCard');
 const attractionName = document.getElementById('attractionName');
+const attractionParkName = document.getElementById('attractionParkName');
 const attractionArea = document.getElementById('attractionArea');
 const attractionDistance = document.getElementById('attractionDistance');
 const attractionSource = document.getElementById('attractionSource');
@@ -213,9 +214,9 @@ function attractionIcon(number, selected = false) {
 function updateAttractionDistance() {
   if (!selectedAttraction) return;
   const parkDistance = latestPosition
-    ? metersBetween(latestPosition.lat, latestPosition.lon, ...CONFIG.parkCenter)
+    ? metersBetween(latestPosition.lat, latestPosition.lon, currentPark.lat, currentPark.lon)
     : Infinity;
-  if (parkDistance >= 1500 || latestPosition.accuracy > 150) {
+  if (parkDistance >= 3200 || latestPosition.accuracy > 150) {
     attractionDistance.textContent = 'Distância disponível quando o GPS estiver preciso na região do parque.';
     return;
   }
@@ -231,11 +232,16 @@ function selectAttraction(attraction) {
   selectedView = 'attraction';
   setFollow(false);
   attractionName.textContent = attraction.name;
-  attractionArea.textContent = attraction.area;
-  attractionSource.href = `https://queue-times.com/parks/6/rides/${attraction.id}`;
+  attractionParkName.textContent = currentPark.name;
+  attractionArea.textContent = attraction.area || 'Atração';
+  const isDynamicAttraction = typeof attraction.id === 'string';
+  attractionSource.href = isDynamicAttraction
+    ? 'https://www.themeparks.wiki/'
+    : `https://queue-times.com/parks/6/rides/${attraction.id}`;
+  attractionSource.textContent = isDynamicAttraction ? 'Fonte: ThemeParks.wiki' : 'Fonte do ponto';
   attractionCard.classList.remove('hidden');
   document.body.classList.add('has-selection');
-  window.dispatchEvent(new CustomEvent('parkpath:attraction', {detail: {name:attraction.name}}));
+  window.dispatchEvent(new CustomEvent('parkpath:attraction', {detail: {id:attraction.id,name:attraction.name}}));
   updateAttractionDistance();
   setRouteStatus(testOrigin
     ? 'Origem de teste selecionada. Toque em “Prévia da rota a pé”.'
@@ -251,13 +257,15 @@ function selectAttraction(attraction) {
 
 function renderSearch(query) {
   const normalized = query.trim().toLocaleLowerCase('pt-BR');
-  const matches = ATTRACTIONS.filter(item =>
-    !normalized || `${item.name} ${item.area}`.toLocaleLowerCase('pt-BR').includes(normalized));
+  const dynamic = window.ParkPathQueues?.mappedAttractions?.(currentPark.key) || [];
+  const available = dynamic.length ? dynamic : (currentPark.key === 'magic' ? ATTRACTIONS : []);
+  const matches = available.filter(item =>
+    !normalized || `${item.name} ${item.area || ''}`.toLocaleLowerCase('pt-BR').includes(normalized));
   searchResults.replaceChildren();
   if (matches.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'empty-result';
-    empty.textContent = 'Nenhuma atração encontrada nesta versão.';
+    empty.textContent = normalized ? 'Nenhuma atração encontrada.' : 'Nenhuma atração mapeada neste momento. Confira o painel Atrações e filas.';
     searchResults.append(empty);
   }
   for (const item of matches) {
@@ -267,7 +275,7 @@ function renderSearch(query) {
     const name = document.createElement('strong');
     name.textContent = item.name;
     const area = document.createElement('small');
-    area.textContent = item.area;
+    area.textContent = item.area || 'Atração';
     button.append(name, area);
     button.addEventListener('click', () => { selectAttraction(item); attractionSearch.blur(); });
     searchResults.append(button);
@@ -284,6 +292,10 @@ ATTRACTIONS.forEach((item, index) => {
 
 attractionSearch.addEventListener('focus', () => renderSearch(attractionSearch.value));
 attractionSearch.addEventListener('input', () => renderSearch(attractionSearch.value));
+window.addEventListener('parkpath:catalog-updated', event => {
+  if (event.detail?.key === 'magic' && window.ParkPathQueues?.hasMappedAttractions?.('magic') && map.hasLayer(magicAttractionLayer)) map.removeLayer(magicAttractionLayer);
+  if (document.activeElement === attractionSearch) renderSearch(attractionSearch.value);
+});
 attractionSearch.addEventListener('keydown', event => {
   if (event.key === 'Escape') { searchResults.classList.remove('visible'); attractionSearch.blur(); }
 });
@@ -299,6 +311,7 @@ closeAttraction.addEventListener('click', () => {
   for (const [id, marker] of attractionMarkers) {
     marker.setIcon(attractionIcon(ATTRACTIONS.findIndex(item => item.id === id) + 1));
   }
+  window.dispatchEvent(new Event('parkpath:attraction-closed'));
 });
 
 function updateParkState(lat, lon) {
@@ -311,8 +324,9 @@ function updateParkState(lat, lon) {
 }
 
 function parkLabel(lat, lon, accuracy) {
-  return accuracy <= 100 && metersBetween(lat, lon, ...CONFIG.parkCenter) < 800
-    ? 'Magic Kingdom (aprox.)' : null;
+  if (accuracy > 100) return null;
+  const match = PARKS.find(p => metersBetween(lat,lon,p.lat,p.lon) < (p.key === 'epic' ? 1350 : 950));
+  return match ? match.name + ' (região aproximada)' : null;
 }
 
 function metersBetween(lat1, lon1, lat2, lon2) {
@@ -528,14 +542,14 @@ function setPark(key, {moveMap=true} = {}) {
   parkSelect.value = next.key;
   if (typeof syncParkQuickButtons === 'function') syncParkQuickButtons();
   officialParkLink.href = next.official;
-  if (next.key === "magic") {
+  // Catálogo e marcadores dinâmicos dos sete parques; Magic conserva fallback.
+  const hasDynamicMagic = window.ParkPathQueues?.hasMappedAttractions?.('magic') || false;
+  if (next.key === 'magic' && !hasDynamicMagic) {
     if (!map.hasLayer(magicAttractionLayer)) magicAttractionLayer.addTo(map);
-    attractionSearchBox.hidden = false;
-  } else {
-    if (map.hasLayer(magicAttractionLayer)) map.removeLayer(magicAttractionLayer);
-    attractionSearchBox.hidden = true;
-    searchResults.classList.remove('visible');
-  }
+  } else if (map.hasLayer(magicAttractionLayer)) map.removeLayer(magicAttractionLayer);
+  attractionSearchBox.hidden = false;
+  attractionSearch.placeholder = 'Buscar atrações · ' + next.name;
+  searchResults.classList.remove('visible');
   // Fecha somente o cartão da atração anterior, sem mexer na navegação A-B.
   if (selectedAttraction) closeAttraction.click();
   parkState.textContent = "Mapa de " + next.name;
