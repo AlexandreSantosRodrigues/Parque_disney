@@ -1,4 +1,4 @@
-const PARKS = [{"key":"magic","name":"Magic Kingdom","lat":28.418783,"lon":-81.581228,"zoom":16,"official":"https://disneyworld.disney.go.com/pt-br/destinations/magic-kingdom/"},{"key":"epcot","name":"EPCOT","lat":28.371841,"lon":-81.54945,"zoom":15,"official":"https://disneyworld.disney.go.com/pt-br/destinations/epcot/"},{"key":"hollywood","name":"Hollywood Studios","lat":28.357373,"lon":-81.560117,"zoom":16,"official":"https://disneyworld.disney.go.com/pt-br/destinations/hollywood-studios/"},{"key":"animal","name":"Animal Kingdom","lat":28.360317,"lon":-81.591293,"zoom":15,"official":"https://disneyworld.disney.go.com/pt-br/destinations/animal-kingdom/"}];
+const PARKS = [{"key":"magic","name":"Magic Kingdom","lat":28.418783,"lon":-81.581228,"zoom":16,"official":"https://disneyworld.disney.go.com/pt-br/destinations/magic-kingdom/","resort":"disney"},{"key":"epcot","name":"EPCOT","lat":28.371841,"lon":-81.54945,"zoom":15,"official":"https://disneyworld.disney.go.com/pt-br/destinations/epcot/","resort":"disney"},{"key":"hollywood","name":"Hollywood Studios","lat":28.357373,"lon":-81.560117,"zoom":16,"official":"https://disneyworld.disney.go.com/pt-br/destinations/hollywood-studios/","resort":"disney"},{"key":"animal","name":"Animal Kingdom","lat":28.360317,"lon":-81.591293,"zoom":15,"official":"https://disneyworld.disney.go.com/pt-br/destinations/animal-kingdom/","resort":"disney"},{"key":"universal-studios","name":"Universal Studios Florida","resort":"universal","lat":28.47724,"lon":-81.46924,"zoom":16,"official":"https://www.universalorlando.com/web/en/us/theme-parks/universal-studios-florida"},{"key":"islands","name":"Islands of Adventure","resort":"universal","lat":28.47114,"lon":-81.47157,"zoom":16,"official":"https://www.universalorlando.com/web/en/us/theme-parks/islands-of-adventure"},{"key":"epic","name":"Epic Universe","resort":"universal","lat":28.4435,"lon":-81.44774,"zoom":16,"official":"https://www.universalorlando.com/web/en/us/theme-parks/epic-universe"}];
 let currentPark = PARKS[0];
 const CONFIG = {
   parkCenter: [28.4195, -81.5812],
@@ -547,8 +547,21 @@ function setPark(key, {moveMap=true} = {}) {
 }
 parkSelect.addEventListener('change', ()=>setPark(parkSelect.value));
 const parkQuickButtons=[...document.querySelectorAll('.park-quick-actions button[data-park]')];
+const resortTabs=[...document.querySelectorAll('.resort-tabs button[data-resort]')];
+let visibleResort='disney';
+function showResort(resort){
+  visibleResort=resort;
+  resortTabs.forEach(button=>{
+    const active=button.dataset.resort===resort;
+    button.classList.toggle('selected',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+  parkQuickButtons.forEach(button=>{button.hidden=button.dataset.resort!==resort;});
+}
 parkQuickButtons.forEach(button=>button.addEventListener('click',()=>setPark(button.dataset.park)));
+resortTabs.forEach(button=>button.addEventListener('click',()=>showResort(button.dataset.resort)));
 function syncParkQuickButtons(){
+  showResort(currentPark.resort);
   parkQuickButtons.forEach(button=>{
     const active=button.dataset.park===currentPark.key;
     button.classList.toggle('selected',active);

@@ -357,3 +357,22 @@ html,body,#app,#map{height:100%;height:100dvh}
  #app .park-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
  #app .search-box{top:calc(max(12px,env(safe-area-inset-top)) + 365px)!important}
 }
+
+
+/* Navegação entre Disney e Universal sem interferir nos controles aprovados de 144px. */
+#app .park-selector{
+ top:16px!important;
+ width:min(720px,calc(100vw - 370px))!important;
+ max-width:720px!important;
+}
+#app .park-nav-title{font-size:14px;font-weight:850;letter-spacing:.04em;color:#465e7c}
+#app .resort-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#app .resort-tabs button{min-height:44px;border:1px solid #c8d3e1;border-radius:12px;background:#eef2f7;color:#162c47;font-weight:850;font-size:15px;cursor:pointer}
+#app .resort-tabs button.selected{background:#132945;color:#fff;border-color:#132945}
+#app .park-quick-actions button[hidden]{display:none!important}
+#app .park-quick-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#app .park-quick-actions button{min-height:50px;font-size:14px}
+@media(max-width:1000px){
+ #app .park-selector{top:calc(max(12px,env(safe-area-inset-top)) + 155px)!important;left:12px!important;right:auto!important;transform:none!important;width:min(420px,calc(100vw - 24px))!important}
+ #app .search-box{top:calc(max(12px,env(safe-area-inset-top)) + 430px)!important}
+}

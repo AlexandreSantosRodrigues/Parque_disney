@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#111111" />
-  <meta name="description" content="Mapa do Magic Kingdom com localização em tempo real para testar de qualquer lugar." />
-  <title>ParkPath — mapa do Magic Kingdom</title>
+  <meta name="description" content="Mapas interativos de sete parques da Disney e Universal Orlando, com GPS e planejamento de rotas." />
+  <title>ParkPath — Disney e Universal Orlando</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="./styles.css?v=wdw4-visible-2" />
+  <link rel="stylesheet" href="./styles.css?v=orlando7-v1" />
 </head>
 <body>
   <main id="app">
@@ -22,19 +22,33 @@
       </div>
     </header>
 
-    <nav class="park-selector" aria-label="Selecione um parque Walt Disney World">
-      <label for="parkSelect">Walt Disney World · Parque</label>
-      <div class="park-quick-actions" role="group" aria-label="Escolha o parque">
-        <button type="button" data-park="magic">Magic Kingdom</button>
-        <button type="button" data-park="epcot">EPCOT</button>
-        <button type="button" data-park="hollywood">Hollywood Studios</button>
-        <button type="button" data-park="animal">Animal Kingdom</button>
+    <nav class="park-selector" aria-label="Parques de Orlando">
+      <span class="park-nav-title">PARQUES DE ORLANDO</span>
+      <div class="resort-tabs" role="group" aria-label="Selecionar complexo">
+        <button type="button" data-resort="disney" aria-pressed="true">Disney · 4</button>
+        <button type="button" data-resort="universal" aria-pressed="false">Universal · 3</button>
+      </div>
+      <div class="park-quick-actions" role="group" aria-label="Escolher parque">
+        <button type="button" data-park="magic" data-resort="disney">Magic Kingdom</button>
+        <button type="button" data-park="epcot" data-resort="disney">EPCOT</button>
+        <button type="button" data-park="hollywood" data-resort="disney">Hollywood Studios</button>
+        <button type="button" data-park="animal" data-resort="disney">Animal Kingdom</button>
+        <button type="button" data-park="universal-studios" data-resort="universal" hidden>Universal Studios Florida</button>
+        <button type="button" data-park="islands" data-resort="universal" hidden>Islands of Adventure</button>
+        <button type="button" data-park="epic" data-resort="universal" hidden>Epic Universe</button>
       </div>
       <select id="parkSelect" aria-label="Selecionar parque">
-        <option value="magic">Magic Kingdom</option>
-        <option value="epcot">EPCOT</option>
-        <option value="hollywood">Hollywood Studios</option>
-        <option value="animal">Animal Kingdom</option>
+        <optgroup label="Walt Disney World">
+          <option value="magic">Magic Kingdom</option>
+          <option value="epcot">EPCOT</option>
+          <option value="hollywood">Hollywood Studios</option>
+          <option value="animal">Animal Kingdom</option>
+        </optgroup>
+        <optgroup label="Universal Orlando Resort">
+          <option value="universal-studios">Universal Studios Florida</option>
+          <option value="islands">Islands of Adventure</option>
+          <option value="epic">Epic Universe</option>
+        </optgroup>
       </select>
       <a id="officialParkLink" href="https://disneyworld.disney.go.com/pt-br/destinations/magic-kingdom/" target="_blank" rel="noopener noreferrer">Informações oficiais ↗</a>
     </nav>
@@ -127,6 +141,6 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="./app.js?v=wdw4-visible-2"></script>
+  <script src="./app.js?v=orlando7-v1"></script>
 </body>
 </html>
