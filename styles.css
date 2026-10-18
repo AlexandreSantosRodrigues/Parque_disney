@@ -325,3 +325,35 @@ html,body,#app,#map{height:100%;height:100dvh}
  #app .search-box{top:calc(max(12px,env(safe-area-inset-top)) + 295px)!important;}
  #app .gps-card{z-index:1012}
 }
+
+
+/* Seletor sempre visível: botões explícitos para os quatro parques */
+#app .park-selector{
+ display:grid!important;
+ position:absolute!important;
+ z-index:1250!important;
+ top:16px!important;
+ left:50%!important;
+ right:auto!important;
+ transform:translateX(-50%)!important;
+ width:min(720px,calc(100vw - 370px))!important;
+ max-width:720px!important;
+ min-width:320px;
+ padding:13px 15px!important;
+ gap:9px!important;
+ border-radius:20px!important;
+}
+#app .park-selector label{font-size:16px;font-weight:850}
+#app .park-quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#app .park-quick-actions button{
+ min-height:56px;border:1px solid #c9d3e0;border-radius:12px;
+ background:#f0f4f9;color:#142b48;padding:8px;font-weight:800;font-size:13px;line-height:1.2;cursor:pointer
+}
+#app .park-quick-actions button.selected{background:#142b48;color:white;border-color:#142b48}
+#app .park-selector select{display:none}
+#app .park-selector a{font-size:12px}
+@media(max-width:1000px){
+ #app .park-selector{top:calc(max(12px,env(safe-area-inset-top)) + 155px)!important;left:12px!important;right:auto!important;transform:none!important;width:min(420px,calc(100vw - 24px))!important;min-width:0}
+ #app .park-quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #app .search-box{top:calc(max(12px,env(safe-area-inset-top)) + 365px)!important}
+}

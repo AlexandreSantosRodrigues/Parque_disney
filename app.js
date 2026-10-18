@@ -525,6 +525,7 @@ function setPark(key, {moveMap=true} = {}) {
   const next = PARKS.find(p=>p.key===key) || PARKS[0];
   currentPark = next;
   parkSelect.value = next.key;
+  if (typeof syncParkQuickButtons === 'function') syncParkQuickButtons();
   officialParkLink.href = next.official;
   if (next.key === "magic") {
     if (!map.hasLayer(magicAttractionLayer)) magicAttractionLayer.addTo(map);
@@ -545,6 +546,16 @@ function setPark(key, {moveMap=true} = {}) {
   // A localização no topo continua representando a localização GPS, não o parque selecionado.
 }
 parkSelect.addEventListener('change', ()=>setPark(parkSelect.value));
+const parkQuickButtons=[...document.querySelectorAll('.park-quick-actions button[data-park]')];
+parkQuickButtons.forEach(button=>button.addEventListener('click',()=>setPark(button.dataset.park)));
+function syncParkQuickButtons(){
+  parkQuickButtons.forEach(button=>{
+    const active=button.dataset.park===currentPark.key;
+    button.classList.toggle('selected',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+}
+
 setPark('magic',{moveMap:false});
 
 /* ParkPath v4: planejador independente de país/parque, A → B, GPS opcional. */
