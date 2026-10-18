@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111b21">
+<meta name="description" content="Hogwarts no mapa: atrações e estimativas de espera em Hogsmeade, Beco Diagonal e Ministério da Magia no Universal Orlando.">
+<title>Estou em Hogwarts · O mapa do mundo bruxo</title>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="./styles.css?v=hogwarts-audit-v1">
+</head>
+<body>
+<div id="site">
+<header class="site-header">
+  <a class="brand" href="#inicio"><span class="brand-symbol" aria-hidden="true">⚡</span><span><small>MAPA DO MUNDO BRUXO</small><strong>Estou em Hogwarts</strong></span></a>
+  <a class="disney-return" href="../" aria-label="Voltar aos mapas da Disney">← Voltar à Disney</a>
+</header>
+<main id="inicio">
+  <section class="intro">
+    <div class="intro-text"><div class="eyebrow">ORLANDO · UNIVERSAL</div><h1>Três mundos.<br><em>Uma jornada mágica.</em></h1><p>Explore as atrações de Harry Potter no mapa, confira a fila comum quando disponível e descubra como chegar até o seu próximo destino.</p></div>
+    <div class="intro-mark">✦<span>H</span>✦</div>
+  </section>
+  <nav class="world-nav" aria-label="Escolher área de Harry Potter">
+    <button data-world="hogsmeade" class="active" type="button" aria-pressed="true"><span>01 · ISLANDS OF ADVENTURE</span><strong>Hogsmeade e Hogwarts</strong></button>
+    <button data-world="diagon" type="button" aria-pressed="false"><span>02 · UNIVERSAL STUDIOS</span><strong>Beco Diagonal</strong></button>
+    <button data-world="ministry" type="button" aria-pressed="false"><span>03 · EPIC UNIVERSE</span><strong>Ministério da Magia</strong></button>
+  </nav>
+  <section class="explorer" aria-label="Explorador do mundo bruxo">
+    <div class="map-pane">
+      <div class="map-heading"><div><span class="small-caps" id="worldEyebrow">HOGSMEADE · ISLANDS OF ADVENTURE</span><h2 id="worldHeading">Rumo a Hogwarts</h2></div><span class="map-tag">Mapa interativo</span></div>
+      <div id="map" aria-label="Mapa geográfico de atrações da Universal Orlando"></div>
+      <div class="map-actions">
+        <button type="button" id="centerBtn">◉ Ver área</button>
+        <button type="button" id="gpsBtn">⌖ Meu GPS</button>
+        <button type="button" id="routeBtn" disabled>↗ Caminhar até atração</button>
+      </div>
+      <p class="map-help" id="mapMessage" role="status">Toque em um marcador ou escolha uma atração na lista. GPS requer sua autorização.</p>
+    </div>
+    <aside class="list-pane">
+      <div class="section-heading"><span class="small-caps">GUIA DE ATRAÇÕES</span><h2>Escolha sua aventura</h2><p id="fetchStatus" role="status">Consultando catálogo e filas…</p></div>
+      <div class="list-tools"><input id="search" type="search" placeholder="Buscar experiência…" autocomplete="off" aria-label="Buscar experiência"><select id="sort" aria-label="Ordenar atrações"><option value="official">Ordem do guia</option><option value="short">Menor fila</option><option value="long">Maior fila</option></select></div>
+      <div id="rideList" class="ride-list" aria-live="polite"></div>
+      <div class="source-note">
+        <strong>Sobre as informações</strong>
+        <p>Os minutos representam a estimativa da fila comum informada pela <a href="https://www.themeparks.wiki/" target="_blank" rel="noopener noreferrer">ThemeParks.wiki</a>, que não é uma API oficial da Universal. Leituras com mais de 12 minutos não aparecem como atuais. Sem coordenadas verificadas, não exibimos marcador. Os caminhos a pé dependem do OpenStreetMap e podem não refletir passagens ou restrições internas.</p>
+        <p>O <a href="https://www.universalorlando.com/web/en/us/things-to-do/rides-attractions/hogwarts-express" target="_blank" rel="noopener noreferrer">Hogwarts Express</a> exige ingresso Park-to-Park para viajar entre os dois parques. Confira no aplicativo oficial antes de se deslocar.</p>
+      </div>
+    </aside>
+  </section>
+  <section class="selected-card" id="selectedPanel" hidden aria-label="Atração escolhida">
+    <div><span class="small-caps">DESTINO SELECIONADO</span><h2 id="selectedName">—</h2><p id="selectedMeta">—</p></div>
+    <a id="selectedOfficial" href="https://www.universalorlando.com/" rel="noopener noreferrer" target="_blank">Detalhes oficiais ↗</a>
+  </section>
+</main>
+<footer>Projeto independente de fãs para navegação e planejamento. Harry Potter e Universal são marcas de seus respectivos titulares. <a href="../">ParkPath Disney →</a></footer>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="./app.js?v=hogwarts-audit-v1"></script>
+</body>
+</html>

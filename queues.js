@@ -1,4 +1,4 @@
-/* ParkPath — catálogo geográfico + filas reais para os sete parques de Orlando.
+/* ParkPath — catálogo geográfico + filas reais para os quatro parques Disney.
  * Fonte: ThemeParks.wiki /v1/entity/{parkId}/children e /live
  * Nunca inventa tempo nem coordenadas. Sem API key, sem backend.
  */
@@ -9,10 +9,8 @@
     magic: {name:"Magic Kingdom", id:"75ea578a-adc8-4116-a54d-dccb60765ef9", lat:28.418783, lon:-81.581228},
     epcot: {name:"EPCOT", id:"47f90d2c-e191-4239-a466-5892ef59a88b", lat:28.371841, lon:-81.549450},
     hollywood: {name:"Hollywood Studios", id:"288747d1-8b4f-4a64-867e-ea7c9b27bad8", lat:28.357373, lon:-81.560117},
-    animal: {name:"Animal Kingdom", id:"1c84a229-8862-4648-9c71-378ddd2c7693", lat:28.360317, lon:-81.591293},
-    "universal-studios": {name:"Universal Studios Florida", id:"eb3f4560-2383-4a36-9152-6b3e5ed6bc57", lat:28.47724, lon:-81.46924},
-    islands: {name:"Islands of Adventure", id:"267615cc-8943-4c2a-ae2c-5da728ca591f", lat:28.47114, lon:-81.47157},
-    epic: {name:"Epic Universe", id:"12dbb85b-265f-44e6-bccf-f1faa17211fc", lat:28.4435, lon:-81.44774}
+    animal: {name:"Animal Kingdom", id:"1c84a229-8862-4648-9c71-378ddd2c7693", lat:28.360317, lon:-81.591293}
+
   };
   const ROOT = "https://api.themeparks.wiki/v1/entity/";
   const LIVE_TTL = 5 * 60 * 1000;
@@ -87,7 +85,7 @@
     if(!data)return [];
     const combined=new Map();
     for(const child of data.catalog || [])combined.set(child.id,{
-      id:child.id,name:child.name,entityType:"ATTRACTION",
+      id:child.id,name:child.name,entityType:child.entityType,
       lat:child.lat,lon:child.lon,area:child.area,
       live:null,hasCoordinates:child.hasCoordinates
     });
@@ -97,7 +95,7 @@
         previous.live=live;
       } else if(typeof live.name==="string" && live.name.trim()) {
         combined.set(live.id,{
-          id:live.id,name:live.name,entityType:"ATTRACTION",
+          id:live.id,name:live.name,entityType:live.entityType,
           lat:null,lon:null,area:"Atração",hasCoordinates:false,live
         });
       }
@@ -136,13 +134,31 @@
       return {label:"Fech.",kind:"closed"};
     return {label:"—",kind:"unknown"};
   }
+  // Auditoria: não classificar tudo como montanha-russa.
+  // Tipos sem confirmação recebem marcador neutro, nunca um emoji enganoso.
+  function categoryIcon(row) {
+    if(row.entityType==="SHOW")return "🎭";
+    const name=normalized(row.name);
+    const contains=fragments=>fragments.some(fragment=>name.includes(fragment));
+    if(contains(["space mountain","big thunder mountain","seven dwarfs mine train",
+      "tron lightcycle","guardians of the galaxy cosmic rewind","expedition everest",
+      "slinky dog dash","rock n roller coaster"]))return "🎢";
+    if(contains(["kali river rapids","tiana s bayou adventure","splash mountain"]))return "💦";
+    if(contains(["kilimanjaro safaris","wildlife express train"]))return "🐘";
+    if(contains(["haunted mansion","tower of terror"]))return "🏚️";
+    if(contains(["pirates of the caribbean","jungle cruise","frozen ever after","living with the land"]))return "🛶";
+    if(contains(["star tours","mission space","soarin","flight of passage",
+      "smugglers run","rise of the resistance"]))return "🚀";
+    if(contains(["walt disney world railroad","monorail","tomorrowland transit authority"]))return "🚂";
+    return "🎟️";
+  }
   function makeIcon(row) {
     const display=waitIcon(row);
     const selected=selectedId===row.id ? " selected" : "";
-    // Os únicos textos injetados no HTML do marcador são gerados localmente.
+    const glyph=categoryIcon(row);
     return L.divIcon({
       className:"park-ride-marker",
-      html:'<div class="park-ride-pin '+display.kind+selected+'"><span>🎢</span><b>'+display.label+'</b></div>',
+      html:'<div class="park-ride-pin '+display.kind+selected+'"><span>'+glyph+'</span><b>'+display.label+'</b></div>',
       iconSize:[62,50],iconAnchor:[31,45]
     });
   }
@@ -152,7 +168,7 @@
     for(const item of items) {
       keep.add(item.id);
       const info=waitIcon(item);
-      const code=info.kind+":"+info.label+":"+(selectedId===item.id);
+      const code=info.kind+":"+info.label+":"+categoryIcon(item)+":"+(selectedId===item.id);
       const old=markers.get(item.id);
       if(old) {
         if(old.code!==code){old.marker.setIcon(makeIcon(item));old.code=code;}
@@ -217,7 +233,7 @@
       const row=newText("div","queue-row","");
       const detail=newText("div","queue-details","");
       const title=newText("strong","",item.name);
-      const extra=newText("small","",statusLabel(w.status)+
+      const extra=newText("small","",(item.entityType==="SHOW"?"Espetáculo · ":"")+statusLabel(w.status)+
         (Number.isFinite(w.age)?" · há "+minutesSince(w.age):"")+
         (item.live?" · "+hourInOrlando(item.live.lastUpdated):" · sem leitura"));
       const right=newText("div","queue-actions","");
@@ -294,13 +310,13 @@
         const catalog=[];
         const ids=new Set();
         for(const entity of json.children){
-          if(entity?.entityType!=="ATTRACTION"||typeof entity.id!=="string"||
+          if(!["ATTRACTION","SHOW"].includes(entity?.entityType)||typeof entity.id!=="string"||
              typeof entity.name!=="string"||!entity.name.trim()||ids.has(entity.id))continue;
           ids.add(entity.id);
           const coords=coordinates(entity,key);
           catalog.push({
             id:entity.id,name:entity.name.trim(),lat:coords?.lat??null,
-            lon:coords?.lon??null,hasCoordinates:!!coords,area:"Atração"
+            lon:coords?.lon??null,hasCoordinates:!!coords,area:entity.entityType==="SHOW"?"Espetáculo":"Atração",entityType:entity.entityType
           });
         }
         // Um catálogo vazio é um estado real; não inventar marcadores.
@@ -339,7 +355,7 @@
           s.liveAt=Date.now();
         } else {
           if(!Array.isArray(response.json?.liveData))throw new Error("Formato de filas inválido");
-          s.live=response.json.liveData.filter(item=>item?.entityType==="ATTRACTION" &&
+          s.live=response.json.liveData.filter(item=>["ATTRACTION","SHOW"].includes(item?.entityType) &&
             typeof item.id==="string" && typeof item.name==="string");
           s.liveAt=Date.now();
           s.etag=response.etag;

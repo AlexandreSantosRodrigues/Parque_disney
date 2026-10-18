@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#111111" />
-  <meta name="description" content="Mapas interativos de sete parques da Disney e Universal Orlando, com GPS e planejamento de rotas." />
-  <title>ParkPath — Disney e Universal Orlando</title>
+  <meta name="description" content="ParkPath Disney: quatro parques de Walt Disney World com GPS, atrações, shows e estimativas de filas." />
+  <title>ParkPath Disney — Walt Disney World</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="./styles.css?v=orlando-attractions-v2" />
+  <link rel="stylesheet" href="./styles.css?v=disney-hogwarts-split-v1" />
 </head>
 <body>
   <main id="app">
@@ -21,36 +21,23 @@
         <span id="placeName">Localizando…</span>
       </div>
     </header>
+    <a class="hogwarts-link" href="./hogwarts/" aria-label="Abrir site independente de Harry Potter">⚡ Estou em Hogwarts</a>
 
-    <nav class="park-selector" aria-label="Parques de Orlando">
-      <span class="park-nav-title">PARQUES DE ORLANDO</span>
-      <div class="resort-tabs" role="group" aria-label="Selecionar complexo">
-        <button type="button" data-resort="disney" aria-pressed="true">Disney · 4</button>
-        <button type="button" data-resort="universal" aria-pressed="false">Universal · 3</button>
-      </div>
-      <div class="park-quick-actions" role="group" aria-label="Escolher parque">
+    <nav class="park-selector" aria-label="Parques Walt Disney World">
+      <span class="park-nav-title">WALT DISNEY WORLD · 4 PARQUES</span>
+      <div class="park-quick-actions" role="group" aria-label="Escolher parque Disney">
         <button type="button" data-park="magic" data-resort="disney">Magic Kingdom</button>
         <button type="button" data-park="epcot" data-resort="disney">EPCOT</button>
         <button type="button" data-park="hollywood" data-resort="disney">Hollywood Studios</button>
         <button type="button" data-park="animal" data-resort="disney">Animal Kingdom</button>
-        <button type="button" data-park="universal-studios" data-resort="universal" hidden>Universal Studios Florida</button>
-        <button type="button" data-park="islands" data-resort="universal" hidden>Islands of Adventure</button>
-        <button type="button" data-park="epic" data-resort="universal" hidden>Epic Universe</button>
       </div>
       <select id="parkSelect" aria-label="Selecionar parque">
-        <optgroup label="Walt Disney World">
-          <option value="magic">Magic Kingdom</option>
-          <option value="epcot">EPCOT</option>
-          <option value="hollywood">Hollywood Studios</option>
-          <option value="animal">Animal Kingdom</option>
-        </optgroup>
-        <optgroup label="Universal Orlando Resort">
-          <option value="universal-studios">Universal Studios Florida</option>
-          <option value="islands">Islands of Adventure</option>
-          <option value="epic">Epic Universe</option>
-        </optgroup>
+        <option value="magic">Magic Kingdom</option>
+        <option value="epcot">EPCOT</option>
+        <option value="hollywood">Hollywood Studios</option>
+        <option value="animal">Animal Kingdom</option>
       </select>
-      <button id="queueOpenBtn" class="queue-open-btn" type="button">🎢 Atrações e filas <span id="queueOpenHint">· consultar agora</span></button>
+      <button id="queueOpenBtn" class="queue-open-btn" type="button">🎟️ Atrações e filas <span id="queueOpenHint">· consultar agora</span></button>
       <a id="officialParkLink" href="https://disneyworld.disney.go.com/pt-br/destinations/magic-kingdom/" target="_blank" rel="noopener noreferrer">Informações oficiais ↗</a>
     </nav>
     <section class="search-box" aria-label="Buscar atrações do Magic Kingdom">
@@ -137,7 +124,7 @@
 
     <section id="queuePanel" class="queue-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="queueHeading">
       <div class="queue-head">
-        <div><small>DISNEY E UNIVERSAL · FILA COMUM</small><h2 id="queueHeading">Estimativas de espera</h2><p id="queueParkHeading">Magic Kingdom</p></div>
+        <div><small>DISNEY · ATRAÇÕES E SHOWS</small><h2 id="queueHeading">Estimativas de espera</h2><p id="queueParkHeading">Magic Kingdom</p></div>
         <button id="queueCloseBtn" type="button" aria-label="Fechar painel">×</button>
       </div>
       <p id="queueStatus" role="status" class="queue-status">Consultando a fonte…</p>
@@ -149,7 +136,7 @@
       <div class="queue-foot">
         <button id="queueRefreshBtn" type="button">Atualizar filas</button>
         <p>Atrações com coordenadas informadas pela fonte aparecem no mapa; o ponto pode não corresponder à entrada. Filas comuns (standby) são estimativas atuais, não previsões futuras. Leituras com mais de 12 minutos não mostram números.</p>
-        <p><a href="https://www.themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a> · Fonte independente dos operadores. Confira os aplicativos oficiais <a href="https://disneyworld.disney.go.com/guest-services/my-disney-experience/mobile-apps/" target="_blank" rel="noopener noreferrer">Disney</a> e <a href="https://www.universalorlando.com/web/en/us" target="_blank" rel="noopener noreferrer">Universal</a> antes de decidir.</p>
+        <p><a href="https://www.themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a> · Fonte independente dos operadores. Confira os aplicativos oficiais <a href="https://disneyworld.disney.go.com/guest-services/my-disney-experience/mobile-apps/" target="_blank" rel="noopener noreferrer">Disney</a> antes de decidir.</p>
       </div>
     </section>
     <div id="permissionPanel" class="permission-panel hidden">
@@ -161,7 +148,7 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="./app.js?v=orlando-attractions-v2"></script>
-  <script src="./queues.js?v=orlando-attractions-v2"></script>
+  <script src="./app.js?v=disney-hogwarts-split-v1"></script>
+  <script src="./queues.js?v=disney-hogwarts-split-v1"></script>
 </body>
 </html>

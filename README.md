@@ -61,3 +61,11 @@ A mesma experiência de atrações e tempos de espera se aplica agora a todos os
 - Créditos e links da ThemeParks.wiki permanecem visíveis; a fonte **não é a API oficial da Disney ou da Universal**. Valide tempos relevantes nos aplicativos dos operadores.
 
 **Testes**: a integração passa por verificações de sintaxe, contratos e dados simulados. Validação visual, conectividade e resposta efetiva da API dependem do navegador com acesso à rede.
+
+
+## Auditoria de 18/10/2026 e separação Disney / Harry Potter
+
+- O site raiz mostra apenas os quatro parques Disney de Orlando. O botão **Estou em Hogwarts** leva ao site independente em `/hogwarts/`, com três áreas Harry Potter da Universal.
+- Auditoria estrutural detectou emoji de montanha-russa para qualquer tipo, exclusão de registros `SHOW` e ausência de garantia de cobertura total. Agora `SHOW` é incluído e ícones conhecidos são diferenciados; itens desconhecidos recebem 🎟️.
+- As respostas JSON completas do provedor não puderam ser acessadas na auditoria externa; cobertura absoluta e percentuais de atrações **não foram confirmados**. Confira o relatório de auditoria fornecido separadamente.
+- O Hogwarts é um segundo frontend estático, com CSS e JavaScript próprios, compartilhando apenas o repositório GitHub Pages. Não é uma página Universal inteira: é exclusivamente o mundo Harry Potter.
