@@ -307,3 +307,21 @@ html,body,#app,#map{height:100%;height:100dvh}
  #app .gps-card .geocode-credit{font-size:12px}
  #app .map-notice{top:315px}
 }
+
+
+/* Walt Disney World: seletor dos 4 parques preservando controles grandes de 144 px */
+.park-selector{
+ position:absolute;z-index:1110;top:calc(max(12px,env(safe-area-inset-top)) + 155px);
+ right:12px;width:min(320px,calc(100vw - 24px));background:rgba(255,255,255,.97);
+ color:#17253a;border-radius:20px;padding:13px 15px;box-shadow:var(--shadow);
+ display:grid;gap:7px
+}
+.park-selector label{font-size:13px;font-weight:800;color:#4b607a}
+.park-selector select{width:100%;min-height:48px;padding:8px;border-radius:12px;border:1px solid #c8d1df;background:#fff;font:700 17px system-ui;color:#17253a}
+.park-selector a{font-size:12px;color:#24579f;text-decoration:underline}
+.search-box[hidden]{display:none!important}
+@media(max-width:760px){
+ .park-selector{top:calc(max(12px,env(safe-area-inset-top)) + 155px);left:12px;right:auto;width:min(360px,calc(100vw - 24px));}
+ #app .search-box{top:calc(max(12px,env(safe-area-inset-top)) + 295px)!important;}
+ #app .gps-card{z-index:1012}
+}

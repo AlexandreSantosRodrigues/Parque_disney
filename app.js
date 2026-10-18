@@ -1,3 +1,5 @@
+const PARKS = [{"key":"magic","name":"Magic Kingdom","lat":28.418783,"lon":-81.581228,"zoom":16,"official":"https://disneyworld.disney.go.com/pt-br/destinations/magic-kingdom/"},{"key":"epcot","name":"EPCOT","lat":28.371841,"lon":-81.54945,"zoom":15,"official":"https://disneyworld.disney.go.com/pt-br/destinations/epcot/"},{"key":"hollywood","name":"Hollywood Studios","lat":28.357373,"lon":-81.560117,"zoom":16,"official":"https://disneyworld.disney.go.com/pt-br/destinations/hollywood-studios/"},{"key":"animal","name":"Animal Kingdom","lat":28.360317,"lon":-81.591293,"zoom":15,"official":"https://disneyworld.disney.go.com/pt-br/destinations/animal-kingdom/"}];
+let currentPark = PARKS[0];
 const CONFIG = {
   parkCenter: [28.4195, -81.5812],
   parkZoom: 16,
@@ -30,6 +32,9 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 const placeName = document.getElementById('placeName');
 const gpsState = document.getElementById('gpsState');
 const parkState = document.getElementById('parkState');
+const parkSelect = document.getElementById('parkSelect');
+const officialParkLink = document.getElementById('officialParkLink');
+const attractionSearchBox = document.querySelector('.search-box');
 const mapNotice = document.getElementById('mapNotice');
 const accuracyText = document.getElementById('accuracyText');
 const speedText = document.getElementById('speedText');
@@ -269,9 +274,10 @@ function renderSearch(query) {
   searchResults.classList.add('visible');
 }
 
+const magicAttractionLayer = L.layerGroup().addTo(map);
 ATTRACTIONS.forEach((item, index) => {
   const marker = L.marker([item.lat, item.lon], { icon: attractionIcon(index + 1), title: item.name, alt: item.name })
-    .addTo(map).on('click', () => selectAttraction(item));
+    .addTo(magicAttractionLayer).on('click', () => selectAttraction(item));
   attractionMarkers.set(item.id, marker);
 });
 
@@ -297,9 +303,10 @@ closeAttraction.addEventListener('click', () => {
 function updateParkState(lat, lon) {
   // Aproximação apenas para informar contexto; não delimita o perímetro oficial.
   const distance = metersBetween(lat, lon, ...CONFIG.parkCenter);
-  parkState.textContent = distance < 1500
-    ? 'Região do Magic Kingdom · limite aproximado'
-    : 'Fora do Magic Kingdom · GPS real';
+  const selectedDistance = metersBetween(lat, lon, currentPark.lat, currentPark.lon);
+  parkState.textContent = selectedDistance < 1500
+    ? 'Região de ' + currentPark.name + ' · limite aproximado'
+    : 'Mapa de ' + currentPark.name + ' · GPS real fora do parque';
 }
 
 function parkLabel(lat, lon, accuracy) {
@@ -498,7 +505,7 @@ function showPark() {
   selectedView = 'park';
   setFollow(false);
   permissionPanel.classList.add('hidden');
-  map.flyTo(CONFIG.parkCenter, CONFIG.parkZoom, { duration: 0.8 });
+  map.flyTo([currentPark.lat,currentPark.lon], currentPark.zoom, { duration: 0.8 });
 }
 
 parkBtn.addEventListener('click', showPark);
@@ -513,6 +520,32 @@ map.on('dragstart', () => {
 
 startWatching();
 
+// Walt Disney World: mapas independentes; atrações cadastradas apenas no Magic Kingdom.
+function setPark(key, {moveMap=true} = {}) {
+  const next = PARKS.find(p=>p.key===key) || PARKS[0];
+  currentPark = next;
+  parkSelect.value = next.key;
+  officialParkLink.href = next.official;
+  if (next.key === "magic") {
+    if (!map.hasLayer(magicAttractionLayer)) magicAttractionLayer.addTo(map);
+    attractionSearchBox.hidden = false;
+  } else {
+    if (map.hasLayer(magicAttractionLayer)) map.removeLayer(magicAttractionLayer);
+    attractionSearchBox.hidden = true;
+    searchResults.classList.remove('visible');
+  }
+  // Fecha somente o cartão da atração anterior, sem mexer na navegação A-B.
+  if (selectedAttraction) closeAttraction.click();
+  parkState.textContent = "Mapa de " + next.name;
+  if (moveMap) {
+    selectedView = "park";
+    setFollow(false);
+    map.flyTo([next.lat,next.lon],next.zoom,{duration:0.7});
+  }
+  // A localização no topo continua representando a localização GPS, não o parque selecionado.
+}
+parkSelect.addEventListener('change', ()=>setPark(parkSelect.value));
+setPark('magic',{moveMap:false});
 
 /* ParkPath v4: planejador independente de país/parque, A → B, GPS opcional. */
 (function initGlobalWalkingPlanner(){
