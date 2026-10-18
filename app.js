@@ -235,6 +235,7 @@ function selectAttraction(attraction) {
   attractionSource.href = `https://queue-times.com/parks/6/rides/${attraction.id}`;
   attractionCard.classList.remove('hidden');
   document.body.classList.add('has-selection');
+  window.dispatchEvent(new CustomEvent('parkpath:attraction', {detail: {name:attraction.name}}));
   updateAttractionDistance();
   setRouteStatus(testOrigin
     ? 'Origem de teste selecionada. Toque em “Prévia da rota a pé”.'
@@ -543,6 +544,7 @@ function setPark(key, {moveMap=true} = {}) {
     setFollow(false);
     map.flyTo([next.lat,next.lon],next.zoom,{duration:0.7});
   }
+  window.dispatchEvent(new CustomEvent('parkpath:park', {detail: {key:next.key,resort:next.resort}}));
   // A localização no topo continua representando a localização GPS, não o parque selecionado.
 }
 parkSelect.addEventListener('change', ()=>setPark(parkSelect.value));

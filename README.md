@@ -43,3 +43,15 @@ A geocodificação reversa usa Nominatim público com consultas espaçadas. O GP
 Referências: [OSRM/FOSSGIS](https://routing.openstreetmap.de/about.html) e [política de uso](https://www.fossgis.de/arbeitsgruppen/osm-server/nutzungsbedingungen/). O servidor público é para testes leves, com limite agregado de uso; antes de distribuir para muitos visitantes será necessário um serviço com capacidade e termos apropriados.
 
 Fontes dos cinco pontos: `https://queue-times.com/parks/6/rides/{138,140,130,129,137}`. A posição de cada atração deve ser conferida em campo antes do uso para navegação.
+
+## Filas Disney — Phase 1
+
+O botão **Filas Disney** consulta tempos atuais de espera comum (standby) para Magic Kingdom, EPCOT, Hollywood Studios e Animal Kingdom pela API livre e documentada https://api.themeparks.wiki/docs/v1. Os três parques Universal permanecem sem filas nesta etapa.
+
+- O tempo vem de queue.STANDBY.waitTime publicado pelo provedor; não é previsão para mais tarde.
+- O estado de operação e lastUpdated são mostrados na lista. Dados com mais de 12 minutos deixam de mostrar número.
+- Atualização no máximo a cada 5 minutos por parque/navegador; busca, classificação e horário da fonte em Orlando.
+- No Magic Kingdom, a ficha dos cinco marcadores mostra a fila quando nome e dado disponível coincidem.
+- Fonte: Powered by ThemeParks.wiki (gratuito com atribuição). Sem API key embutida.
+- Se a API não responder, mostrar indisponível. Os dados podem divergir do My Disney Experience oficial.
+- Verificações estáticas não substituem testes reais de rede, CORS e navegador.

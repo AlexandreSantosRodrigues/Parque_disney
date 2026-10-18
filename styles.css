@@ -376,3 +376,36 @@ html,body,#app,#map{height:100%;height:100dvh}
  #app .park-selector{top:calc(max(12px,env(safe-area-inset-top)) + 155px)!important;left:12px!important;right:auto!important;transform:none!important;width:min(420px,calc(100vw - 24px))!important}
  #app .search-box{top:calc(max(12px,env(safe-area-inset-top)) + 430px)!important}
 }
+
+
+/* Filas Disney; controles de 144px permanecem intocados. */
+#app .queue-open-btn{display:block;width:100%;min-height:56px;padding:11px;border:0;border-radius:12px;background:#1767c7;color:white;font:800 16px system-ui;cursor:pointer}
+#app .queue-open-btn[hidden]{display:none!important}
+#app .queue-open-btn span{font-size:12px}
+#app .attraction-queue-info{margin:10px 0;padding:11px;border-radius:12px;background:#e7f2ff;color:#175caf;font-size:15px;line-height:1.5;font-weight:750}
+#app .queue-panel{position:absolute;z-index:2250;top:50%;left:50%;transform:translate(-50%,-50%);width:min(580px,calc(100vw - 24px));max-height:calc(100dvh - 36px);overflow:auto;background:#fff;border-radius:22px;padding:20px;color:#15243a;box-shadow:0 20px 56px #0005}
+#app .queue-panel.hidden{display:none!important}
+#app .queue-head{display:flex;justify-content:space-between;gap:10px}
+#app .queue-head small{font-size:12px;font-weight:850;color:#597495}
+#app .queue-head h2{font-size:24px;margin:4px 0}
+#app .queue-head p{font-size:15px;color:#526783;margin:0}
+#app .queue-head button{min-width:52px;height:52px;border:0;border-radius:12px;background:#e9eef6;font-size:31px;color:#182c48}
+#app .queue-status{padding:12px;margin:14px 0;background:#eef4fa;border-radius:12px;color:#385370;font-size:13px;line-height:1.5}
+#app .queue-filter{display:flex;gap:9px;margin-bottom:10px}
+#app .queue-filter input,#app .queue-filter select{min-width:0;padding:12px;border:1px solid #d0dbe6;border-radius:11px;background:#fff;color:#182c48;font:600 15px system-ui}
+#app .queue-filter input{flex:1}
+#app .queue-filter select{max-width:143px}
+#app .queue-list{display:grid;gap:8px;max-height:44dvh;overflow-y:auto}
+#app .queue-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;background:#f4f7fb;border-radius:12px}
+#app .queue-details{min-width:0;flex:1;display:grid;gap:6px}
+#app .queue-details strong{font-size:15px;overflow-wrap:anywhere}
+#app .queue-details small{color:#586d84;font-size:11px;line-height:1.5}
+#app .queue-wait{font-size:19px;white-space:nowrap;color:#1765bd}
+#app .queue-wait.unavailable{font-size:12px;color:#69717c;white-space:normal;max-width:125px;text-align:right}
+#app .queue-empty{font-size:14px;color:#69717c;padding:12px}
+#app .queue-foot{border-top:1px solid #e5eaf0;padding-top:12px;margin-top:12px}
+#app .queue-foot button{padding:13px 17px;border:0;border-radius:11px;background:#122b46;color:#fff;font-weight:800;font-size:15px}
+#app .queue-foot button:disabled{opacity:.55}
+#app .queue-foot p{font-size:11px;line-height:1.5;color:#536781}
+#app .queue-foot a{color:#245dab}
+@media(max-width:760px){#app .queue-panel{top:auto;bottom:0;left:0;transform:none;width:100%;max-height:84dvh;border-radius:24px 24px 0 0;padding:18px 14px calc(18px + env(safe-area-inset-bottom))}#app .queue-list{max-height:40dvh}}
