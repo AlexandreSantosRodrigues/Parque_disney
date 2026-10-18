@@ -19,16 +19,34 @@ const ATTRACTIONS = [
   { id: 137, name: 'Pirates of the Caribbean', area: 'Adventureland', lat: 28.4177, lon: -81.5848 }
 ];
 
+// Em celulares, reduzir a animação de tiles/zoom e o trabalho da GPU.
+const LOW_MOTION = window.matchMedia?.('(max-width: 900px), (prefers-reduced-motion: reduce)')?.matches ?? false;
 const map = L.map('map', {
   zoomControl: false,
-  preferCanvas: true
+  preferCanvas: true,
+  zoomAnimation: !LOW_MOTION,
+  fadeAnimation: !LOW_MOTION,
+  markerZoomAnimation: !LOW_MOTION,
+  inertia: !LOW_MOTION
 }).setView(CONFIG.parkCenter, CONFIG.parkZoom);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
+  keepBuffer: LOW_MOTION ? 1 : 2,
+  updateWhenZooming: !LOW_MOTION,
+  updateWhenIdle: LOW_MOTION,
   attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
+// Prefer immediate map changes over expensive flyTo animations on mobile.
+function flyToSmart(point,zoom,options={}) {
+  if (LOW_MOTION) {
+    map.stop();
+    map.setView(point,zoom,{animate:false});
+  } else {
+    map.flyTo(point,zoom,options);
+  }
+}
 const placeName = document.getElementById('placeName');
 const gpsState = document.getElementById('gpsState');
 const parkState = document.getElementById('parkState');
@@ -63,9 +81,11 @@ let watchId = null;
 let userMarker = null;
 let accuracyCircle = null;
 let latestPosition = null;
-let followUser = true;
+let lastGpsPaintAt = 0;
+let lastPanAt = 0;
+let followUser = false; // Inicialmente permanece no parque; GPS disponível pelo botão.
 let hasCenteredOnce = false;
-let selectedView = 'user';
+let selectedView = 'park';
 let lastReverse = { lat: null, lon: null, time: 0 };
 let reverseInFlight = false;
 let reverseController = null;
@@ -78,9 +98,13 @@ let routeLine = null;
 let routeRequest = null;
 let lastRouteRequestAt = 0;
 
+let previousCardClearance = -1;
 function updateCardClearance() {
-  if (!attractionCard.classList.contains('hidden')) {
-    document.body.style.setProperty('--card-clearance', `${attractionCard.offsetHeight + 12}px`);
+  if (attractionCard.classList.contains('hidden')) return;
+  const next = attractionCard.offsetHeight + 12;
+  if (next !== previousCardClearance) {
+    previousCardClearance = next;
+    document.body.style.setProperty('--card-clearance', next + 'px');
   }
 }
 if ('ResizeObserver' in window) new ResizeObserver(updateCardClearance).observe(attractionCard);
@@ -104,7 +128,7 @@ function clearRoute() {
 function availableOrigin() {
   if (testOrigin) return { ...testOrigin, type: 'test' };
   if (!latestPosition || latestPosition.accuracy > 100 ||
-      metersBetween(latestPosition.lat, latestPosition.lon, ...CONFIG.parkCenter) > 1500) return null;
+      metersBetween(latestPosition.lat, latestPosition.lon, currentPark.lat, currentPark.lon) > 3200) return null;
   return { lat: latestPosition.lat, lon: latestPosition.lon, type: 'gps' };
 }
 
@@ -250,7 +274,7 @@ function selectAttraction(attraction) {
   for (const [id, marker] of attractionMarkers) {
     marker.setIcon(attractionIcon(ATTRACTIONS.findIndex(item => item.id === id) + 1, id === attraction.id));
   }
-  map.flyTo([attraction.lat, attraction.lon], 18, { duration: 0.7 });
+  flyToSmart([attraction.lat, attraction.lon], 18, { duration: 0.7 });
   attractionSearch.value = '';
   searchResults.classList.remove('visible');
 }
@@ -416,6 +440,11 @@ function updateMarkerHeading(heading) {
 function onPosition(position) {
   const { latitude: lat, longitude: lon, accuracy, speed, heading } = position.coords;
   latestPosition = { lat, lon, accuracy, speed, heading, timestamp: position.timestamp };
+  if (document.hidden) return;
+  // Evita recalcular círculo, heading, textos e mapa a cada amostra do GPS.
+  const now = Date.now();
+  if (userMarker && now - lastGpsPaintAt < 2500) return;
+  lastGpsPaintAt = now;
   updateAttractionDistance();
   updateParkState(lat, lon);
   const nearbyPark = parkLabel(lat, lon, accuracy);
@@ -445,7 +474,14 @@ function onPosition(position) {
       map.setView([lat, lon], CONFIG.followZoom, { animate: false });
       hasCenteredOnce = true;
     } else {
-      if (metersBetween(map.getCenter().lat, map.getCenter().lng, lat, lon) >= 5) map.panTo([lat, lon], { animate: true, duration: 0.6, easeLinearity: 0.25 });
+      // GPS impreciso pode oscilar dezenas de metros mesmo com a pessoa parada.
+      // No celular, evita animações e movimento constante dos tiles.
+      if (accuracy <= 100 &&
+          metersBetween(map.getCenter().lat,map.getCenter().lng,lat,lon) >= 25 &&
+          now - lastPanAt >= 5000) {
+        map.panTo([lat,lon], {animate:!LOW_MOTION, duration:LOW_MOTION?0:0.3});
+        lastPanAt = now;
+      }
     }
   }
 
@@ -486,9 +522,9 @@ function startWatching() {
   if (watchId != null) navigator.geolocation.clearWatch(watchId);
   gpsState.textContent = 'Buscando GPS…';
   watchId = navigator.geolocation.watchPosition(onPosition, onPositionError, {
-    enableHighAccuracy: true,
-    maximumAge: 0,
-    timeout: 15000
+    enableHighAccuracy: followUser && selectedView === 'user',
+    maximumAge: 2500,
+    timeout: 20000
   });
 }
 
@@ -500,17 +536,23 @@ function setFollow(value) {
 
 followBtn.addEventListener('click', () => {
   setFollow(!followUser);
-  if (followUser) selectedView = 'user';
+  if (followUser) {
+    selectedView = 'user';
+    startWatching(); // Precisão alta apenas durante acompanhamento GPS.
+  } else {
+    startWatching(); // Baixa precisão ao apenas explorar o mapa.
+  }
   if (followUser && latestPosition) {
-    map.flyTo([latestPosition.lat, latestPosition.lon], Math.max(map.getZoom(), 17), { duration: 0.7 });
+    flyToSmart([latestPosition.lat, latestPosition.lon], Math.max(map.getZoom(), 17), { duration: 0.7 });
   }
 });
 
 locateBtn.addEventListener('click', () => {
   setFollow(true);
   selectedView = 'user';
+  startWatching(); // Navegação solicitada: ativa GPS de alta precisão.
   if (latestPosition) {
-    map.flyTo([latestPosition.lat, latestPosition.lon], CONFIG.followZoom, { duration: 0.7 });
+    flyToSmart([latestPosition.lat, latestPosition.lon], CONFIG.followZoom, { duration: 0.7 });
   } else {
     startWatching();
   }
@@ -520,7 +562,7 @@ function showPark() {
   selectedView = 'park';
   setFollow(false);
   permissionPanel.classList.add('hidden');
-  map.flyTo([currentPark.lat,currentPark.lon], currentPark.zoom, { duration: 0.8 });
+  flyToSmart([currentPark.lat,currentPark.lon], currentPark.zoom, { duration: 0.8 });
 }
 
 parkBtn.addEventListener('click', showPark);
@@ -556,7 +598,7 @@ function setPark(key, {moveMap=true} = {}) {
   if (moveMap) {
     selectedView = "park";
     setFollow(false);
-    map.flyTo([next.lat,next.lon],next.zoom,{duration:0.7});
+    flyToSmart([next.lat,next.lon],next.zoom,{duration:0.7});
   }
   window.dispatchEvent(new CustomEvent('parkpath:park', {detail: {key:next.key,resort:next.resort}}));
   // A localização no topo continua representando a localização GPS, não o parque selecionado.
@@ -689,7 +731,7 @@ setPark('magic',{moveMap:false});
       };
       selectPoint("origin",{lat:latestPosition.lat,lon:latestPosition.lon,source:"gps"});
       message("Partida definida pelo GPS. Agora marque B no mapa.");
-      map.flyTo([latestPosition.lat,latestPosition.lon],Math.max(map.getZoom(),15),{duration:.5});
+      flyToSmart([latestPosition.lat,latestPosition.lon],Math.max(map.getZoom(),15),{duration:.5});
     };
     navigator.geolocation.getCurrentPosition(
       accept,
@@ -791,7 +833,7 @@ setPark('magic',{moveMap:false});
       const place=items?.[0];
       if(!place)throw Error("Nenhum lugar encontrado");
       showPlanner();
-      map.flyTo([Number(place.lat),Number(place.lon)],16,{duration:.9});
+      flyToSmart([Number(place.lat),Number(place.lon)],16,{duration:.9});
       message("Local encontrado. Toque em “Marcar A” ou “Marcar B” e depois no ponto desejado no mapa.");
     }catch(error){
       message("Não foi possível localizar esse endereço. Você ainda pode navegar pelo mapa manualmente.",true);

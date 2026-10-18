@@ -55,6 +55,8 @@
   });
   const markerLayer = L.layerGroup().addTo(map);
   const markers = new Map();
+  // Catálogo é imutável entre consultas; cache por identidade elimina joins repetidos.
+  const compiledCache = new Map();
   let park = document.getElementById("parkSelect").value || "magic";
   let selectedId = null;
   let globalThrottleUntil = 0;
@@ -101,8 +103,10 @@
   function compiled(key) {
     const dataset=state.get(key),guides=GUIDE[key]||[];
     if(!dataset)return [];
+    const cached=compiledCache.get(key);
+    if(cached && cached.catalog===dataset.catalog && cached.live===dataset.live)return cached.rows;
     const catalog=dataset.catalog||[],liveData=dataset.live||[];
-    return guides.map(guide=>{
+    const rows=guides.map(guide=>{
       const matchCatalog=catalog.find(entry=>guide.aliases.some(alias=>normalized(entry.name).includes(normalized(alias))));
       const matchLive=liveData.find(entry=>matchCatalog && entry.id===matchCatalog.id) ||
         liveData.find(entry=>guide.aliases.some(alias=>normalized(entry.name).includes(normalized(alias))));
@@ -114,6 +118,8 @@
         hasCoordinates:!!matchCatalog?.hasCoordinates,live:matchLive||null
       };
     });
+    compiledCache.set(key,{catalog:dataset.catalog,live:dataset.live,rows});
+    return rows;
   }
   function mappedAttractions(key) {
     return compiled(key).filter(x=>x.hasCoordinates).map(x=>({
@@ -184,7 +190,11 @@
     });
   }
   function renderMarkers() {
-    const items=compiled(park).filter(item=>item.hasCoordinates);
+    const bounds=map.getBounds?.();
+    const visibleBounds=bounds?.pad?.(0.18) || bounds;
+    // Não renderizar DOM para pontos fora da tela: a lista permanece completa.
+    const items=compiled(park).filter(item=>
+      item.hasCoordinates && (!visibleBounds || visibleBounds.contains([item.lat,item.lon])));
     const keep=new Set();
     for(const item of items) {
       keep.add(item.id);
@@ -193,6 +203,10 @@
       const old=markers.get(item.id);
       if(old) {
         if(old.code!==code){old.marker.setIcon(makeIcon(item));old.code=code;}
+        if(old.lat!==item.lat || old.lon!==item.lon){
+          old.marker.setLatLng([item.lat,item.lon]);
+          old.lat=item.lat;old.lon=item.lon;
+        }
       } else {
         const marker=L.marker([item.lat,item.lon],{
           icon:makeIcon(item),title:item.name,alt:item.name
@@ -200,7 +214,7 @@
         marker.on("click",()=>selectAttraction({
           id:item.id,name:item.name,lat:item.lat,lon:item.lon,area:item.area||"Atração",official:item.url
         }));
-        markers.set(item.id,{marker,code});
+        markers.set(item.id,{marker,code,lat:item.lat,lon:item.lon});
       }
     }
     for(const [id,obj] of markers)if(!keep.has(id)){
@@ -298,10 +312,25 @@
     renderAttractionCard();
   }
   function render() {
-    if(!PARKS[park])return;
+    if(!PARKS[park] || document.hidden)return;
     renderMarkers();
-    renderRows();
+    // A lista pode conter dezenas de itens: só recriar DOM quando aberta.
+    if(!els.queuePanel.classList.contains("hidden")) {
+      renderRows();
+    } else {
+      els.queueOpenHint.textContent="· "+compiled(park).length+" atrações";
+      renderAttractionCard();
+    }
   }
+  let markerRenderQueued=false;
+  map.on?.("moveend",()=>{
+    if(markerRenderQueued || document.hidden)return;
+    markerRenderQueued=true;
+    requestAnimationFrame(()=>{
+      markerRenderQueued=false;
+      if(!document.hidden)renderMarkers();
+    });
+  });
 
   async function readJSON(url,signal,etag) {
     const headers={Accept:"application/json"};

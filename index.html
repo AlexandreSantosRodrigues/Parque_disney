@@ -8,7 +8,7 @@
   <title>ParkPath Disney — Walt Disney World</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="./styles.css?v=queue-colors-v2" />
+  <link rel="stylesheet" href="./styles.css?v=mobile-fast-v3" />
 </head>
 <body>
   <main id="app">
@@ -59,7 +59,7 @@
     <div class="controls" aria-label="Controles de navegação">
       <button id="parkBtn" class="map-btn park-btn" type="button" title="Ir ao Magic Kingdom" aria-label="Ir ao Magic Kingdom"><span class="control-icon">🏰</span><span class="control-label">Disney</span></button>
       <button id="plannerOpenBtn" class="map-btn" type="button" title="Planejar rota a pé" aria-label="Planejar rota"><span class="control-icon">↗</span><span class="control-label">Rotas</span></button>
-      <button id="followBtn" class="map-btn active" type="button" aria-pressed="true" title="Seguir meus movimentos" aria-label="Seguir meus movimentos"><span class="control-icon">◎</span><span class="control-label">Seguir</span></button>
+      <button id="followBtn" class="map-btn" type="button" aria-pressed="false" title="Seguir meus movimentos" aria-label="Seguir meus movimentos"><span class="control-icon">◎</span><span class="control-label">Seguir</span></button>
       <button id="locateBtn" class="map-btn" type="button" title="Mostrar minha localização" aria-label="Mostrar minha localização"><span class="control-icon">⌖</span><span class="control-label">Meu GPS</span></button>
     </div>
     <div id="mapNotice" class="map-notice" role="status">Permita a localização para testar o mapa onde você está.</div>
@@ -149,7 +149,7 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="./app.js?v=disney-hogwarts-split-v1"></script>
-  <script src="./queues.js?v=queue-colors-v2"></script>
+  <script src="./app.js?v=mobile-fast-v3"></script>
+  <script src="./queues.js?v=mobile-fast-v3"></script>
 </body>
 </html>

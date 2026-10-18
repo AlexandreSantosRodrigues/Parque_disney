@@ -494,3 +494,30 @@ html,body,#app,#map{height:100%;height:100dvh}
 #app .queue-legend .wait-medium i{background:#f1c43d}
 #app .queue-legend .wait-high i{background:#ba343b}
 #app .queue-legend .wait-between i{background:#536175}
+
+
+/* Mobile performance v3: preservar 144px e reduzir composição de camadas da GPU.
+   Backdrop blur exige repintura de todo o mapa por trás de cada painel. */
+@media (max-width: 900px), (prefers-reduced-motion: reduce) {
+  #app .brand, #app .place-badge, #app .gps-card,
+  #app .map-btn, #app .permission-panel, #app .park-selector,
+  #app .attraction-card, #app .route-planner, #app .queue-panel,
+  #app .search-box, #app .hogwarts-link {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  #app .controls .map-btn, #app .brand, #app .place-badge {
+    transition: none !important;
+  }
+  .park-ride-pin, .hp-pin-inner {
+    transition: none !important;
+  }
+  #app .queue-list, #app .search-results {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  #app .queue-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 78px;
+  }
+}

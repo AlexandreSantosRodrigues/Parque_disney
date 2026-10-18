@@ -80,3 +80,8 @@ A mesma experiência de atrações e tempos de espera se aplica agora a todos os
 - As filas continuam vindo de `queue.STANDBY.waitTime`, com idade máxima de 12 minutos; não são previsões para o horário de chegada. A disponibilidade real da API e da roteirização depende dos serviços externos.
 - Hogwarts Express entre os parques depende de ingresso **Park-to-Park**; confirme condições nos canais oficiais da Universal.
 - A implementação passou por testes estáticos da estrutura dos dois frontends, sintaxe, seleção de fontes e faixas de tempo. Testes de navegação visual em dispositivo físico e consulta à API pública no site publicado ainda são necessários.
+
+
+## Performance no celular — versão mobile-fast-v3
+
+Foi feita uma [auditoria técnica de desempenho](PERFORMANCE_AUDIT_2026-10-18.md) de Disney e Hogwarts com correções de redesenho da lista fechada, cache de catálogos, pinos apenas na área visível, GPS menos exigente e animações/blur reduzidos no celular. O mapa inicia no parque (botões Seguir/Meu GPS continuam ativos para ir à localização real). Não há medições de FPS em telefone físico; o relatório diferencia testes simulados de validação real.
