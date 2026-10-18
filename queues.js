@@ -126,6 +126,13 @@
       raw>=0 && raw<=MAX_WAIT ? Math.round(raw):null;
     return {wait,text:wait===null?"Fila não informada":wait+" min",status,age,stale:false};
   }
+  function waitTier(minutes) {
+    if(minutes===null || !Number.isFinite(minutes))return "wait-unknown";
+    if(minutes<=20)return "wait-low";
+    if(minutes>=25 && minutes<=50)return "wait-medium";
+    if(minutes>=60)return "wait-high";
+    return "wait-between"; // 21-24 e 51-59 min: sem extrapolar faixas
+  }
   function waitIcon(row) {
     const v=waitInfo(row.live);
     if(v.wait!==null)return {label:v.wait+"m",kind:"active"};
@@ -158,7 +165,7 @@
     const glyph=categoryIcon(row);
     return L.divIcon({
       className:"park-ride-marker",
-      html:'<div class="park-ride-pin '+display.kind+selected+'"><span>'+glyph+'</span><b>'+display.label+'</b></div>',
+      html:'<div class="park-ride-pin '+display.kind+selected+" "+waitTier(waitInfo(row.live).wait)+'"><span>'+glyph+'</span><b>'+display.label+'</b></div>',
       iconSize:[62,50],iconAnchor:[31,45]
     });
   }
@@ -168,7 +175,7 @@
     for(const item of items) {
       keep.add(item.id);
       const info=waitIcon(item);
-      const code=info.kind+":"+info.label+":"+categoryIcon(item)+":"+(selectedId===item.id);
+      const code=info.kind+":"+info.label+":"+waitTier(waitInfo(item.live).wait)+":"+categoryIcon(item)+":"+(selectedId===item.id);
       const old=markers.get(item.id);
       if(old) {
         if(old.code!==code){old.marker.setIcon(makeIcon(item));old.code=code;}
@@ -203,6 +210,8 @@
       return;
     }
     const w=waitInfo(item.live);
+    els.attractionQueueInfo.classList.remove("wait-low","wait-medium","wait-high","wait-between","wait-unknown");
+    els.attractionQueueInfo.classList.add(waitTier(w.wait));
     els.attractionQueueInfo.textContent="Fila comum: "+w.text+
       (Number.isFinite(w.age)?" · atualizado há "+minutesSince(w.age):"")+
       " · ThemeParks.wiki";
@@ -230,14 +239,14 @@
     const fragment=document.createDocumentFragment();
     for(const item of filtered) {
       const w=waitInfo(item.live,now);
-      const row=newText("div","queue-row","");
+      const row=newText("div","queue-row "+waitTier(w.wait),"");
       const detail=newText("div","queue-details","");
       const title=newText("strong","",item.name);
       const extra=newText("small","",(item.entityType==="SHOW"?"Espetáculo · ":"")+statusLabel(w.status)+
         (Number.isFinite(w.age)?" · há "+minutesSince(w.age):"")+
         (item.live?" · "+hourInOrlando(item.live.lastUpdated):" · sem leitura"));
       const right=newText("div","queue-actions","");
-      const wait=newText("strong","queue-wait"+(w.wait===null?" unavailable":""),w.text);
+      const wait=newText("strong","queue-wait "+waitTier(w.wait)+(w.wait===null?" unavailable":""),w.text);
       detail.append(title,extra);
       right.append(wait);
       if(item.hasCoordinates) {

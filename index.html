@@ -8,7 +8,7 @@
   <title>ParkPath Disney — Walt Disney World</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="./styles.css?v=disney-hogwarts-split-v1" />
+  <link rel="stylesheet" href="./styles.css?v=queue-colors-v2" />
 </head>
 <body>
   <main id="app">
@@ -128,6 +128,7 @@
         <button id="queueCloseBtn" type="button" aria-label="Fechar painel">×</button>
       </div>
       <p id="queueStatus" role="status" class="queue-status">Consultando a fonte…</p>
+      <div class="queue-legend" aria-label="Legenda das cores de espera"><span class="wait-low"><i></i> Até 20 min</span><span class="wait-medium"><i></i> 25–50 min</span><span class="wait-high"><i></i> 60+ min</span><span class="wait-between"><i></i> Outras esperas</span></div>
       <div class="queue-filter">
         <input id="queueSearch" type="search" placeholder="Buscar brinquedo ou atração" aria-label="Buscar atração" autocomplete="off">
         <select id="queueSort" aria-label="Ordenar filas"><option value="name">A–Z</option><option value="short">Menor fila</option><option value="long">Maior fila</option></select>
@@ -149,6 +150,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script src="./app.js?v=disney-hogwarts-split-v1"></script>
-  <script src="./queues.js?v=disney-hogwarts-split-v1"></script>
+  <script src="./queues.js?v=queue-colors-v2"></script>
 </body>
 </html>

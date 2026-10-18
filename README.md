@@ -69,3 +69,14 @@ A mesma experiência de atrações e tempos de espera se aplica agora a todos os
 - Auditoria estrutural detectou emoji de montanha-russa para qualquer tipo, exclusão de registros `SHOW` e ausência de garantia de cobertura total. Agora `SHOW` é incluído e ícones conhecidos são diferenciados; itens desconhecidos recebem 🎟️.
 - As respostas JSON completas do provedor não puderam ser acessadas na auditoria externa; cobertura absoluta e percentuais de atrações **não foram confirmados**. Confira o relatório de auditoria fornecido separadamente.
 - O Hogwarts é um segundo frontend estático, com CSS e JavaScript próprios, compartilhando apenas o repositório GitHub Pages. Não é uma página Universal inteira: é exclusivamente o mundo Harry Potter.
+
+
+## Atualização: Hogwarts no formato ParkPath + cores de fila (18/10/2026)
+
+- **Disney**: https://alexandresantosrodrigues.github.io/Parque_disney/ — 4 parques temáticos, mapa tela cheia, GPS, planejamento A/B, atrações e estimativas de fila.
+- **Hogwarts**: https://alexandresantosrodrigues.github.io/Parque_disney/hogwarts/ — agora também usa **mapa de tela cheia e a mesma estrutura funcional** da Disney. Seletor de três áreas, GPS em tempo real, painel de atrações do universo Harry Potter, planejador de caminhada A/B e cálculo de trajetos. O arquivo `hogwarts/styles.css` aplica um tema próprio sobre os estilos compartilhados, sem modificar as dimensões de 144×144 px dos botões do mapa.
+- O guia tem 10 experiências de Harry Potter confirmadas em fontes oficiais Universal, inclusive experiências sem fila comum ou sem coordenadas. Somente os pontos informados pela ThemeParks.wiki recebem marcadores.
+- Os **dois sites** agora destacam filas comuns válidas e recentes nas seguintes faixas: **verde 0–20 min**, **amarelo 25–50 min**, **vermelho 60 min ou mais**. Para 21–24 e 51–59 min, cinza neutro; leituras desatualizadas, atrações fechadas e informações ausentes não recebem cor de fila ativa.
+- As filas continuam vindo de `queue.STANDBY.waitTime`, com idade máxima de 12 minutos; não são previsões para o horário de chegada. A disponibilidade real da API e da roteirização depende dos serviços externos.
+- Hogwarts Express entre os parques depende de ingresso **Park-to-Park**; confirme condições nos canais oficiais da Universal.
+- A implementação passou por testes estáticos da estrutura dos dois frontends, sintaxe, seleção de fontes e faixas de tempo. Testes de navegação visual em dispositivo físico e consulta à API pública no site publicado ainda são necessários.

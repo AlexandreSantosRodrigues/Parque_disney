@@ -1,61 +1,155 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111b21">
-<meta name="description" content="Hogwarts no mapa: atrações e estimativas de espera em Hogsmeade, Beco Diagonal e Ministério da Magia no Universal Orlando.">
-<title>Estou em Hogwarts · O mapa do mundo bruxo</title>
-<link rel="preconnect" href="https://unpkg.com">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<link rel="stylesheet" href="./styles.css?v=hogwarts-audit-v1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a292d" />
+  <meta name="description" content="Estou em Hogwarts: três áreas de Harry Potter na Universal Orlando, atrações, esperas, GPS e caminhada no mapa." />
+  <title>Estou em Hogwarts — mapa das atrações</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="../styles.css?v=queue-colors-v2" />
+  <link rel="stylesheet" href="./styles.css?v=hogwarts-map-v2" />
 </head>
 <body>
-<div id="site">
-<header class="site-header">
-  <a class="brand" href="#inicio"><span class="brand-symbol" aria-hidden="true">⚡</span><span><small>MAPA DO MUNDO BRUXO</small><strong>Estou em Hogwarts</strong></span></a>
-  <a class="disney-return" href="../" aria-label="Voltar aos mapas da Disney">← Voltar à Disney</a>
-</header>
-<main id="inicio">
-  <section class="intro">
-    <div class="intro-text"><div class="eyebrow">ORLANDO · UNIVERSAL</div><h1>Três mundos.<br><em>Uma jornada mágica.</em></h1><p>Explore as atrações de Harry Potter no mapa, confira a fila comum quando disponível e descubra como chegar até o seu próximo destino.</p></div>
-    <div class="intro-mark">✦<span>H</span>✦</div>
-  </section>
-  <nav class="world-nav" aria-label="Escolher área de Harry Potter">
-    <button data-world="hogsmeade" class="active" type="button" aria-pressed="true"><span>01 · ISLANDS OF ADVENTURE</span><strong>Hogsmeade e Hogwarts</strong></button>
-    <button data-world="diagon" type="button" aria-pressed="false"><span>02 · UNIVERSAL STUDIOS</span><strong>Beco Diagonal</strong></button>
-    <button data-world="ministry" type="button" aria-pressed="false"><span>03 · EPIC UNIVERSE</span><strong>Ministério da Magia</strong></button>
-  </nav>
-  <section class="explorer" aria-label="Explorador do mundo bruxo">
-    <div class="map-pane">
-      <div class="map-heading"><div><span class="small-caps" id="worldEyebrow">HOGSMEADE · ISLANDS OF ADVENTURE</span><h2 id="worldHeading">Rumo a Hogwarts</h2></div><span class="map-tag">Mapa interativo</span></div>
-      <div id="map" aria-label="Mapa geográfico de atrações da Universal Orlando"></div>
-      <div class="map-actions">
-        <button type="button" id="centerBtn">◉ Ver área</button>
-        <button type="button" id="gpsBtn">⌖ Meu GPS</button>
-        <button type="button" id="routeBtn" disabled>↗ Caminhar até atração</button>
+  <main id="app">
+    <div id="map" aria-label="Mapa interativo"></div>
+
+    <header class="topbar">
+      <div class="brand">⚡ Hogwarts</div>
+      <div id="placeBadge" class="place-badge" title="Localização atual">
+        <span class="place-dot"></span>
+        <span id="placeName">Localizando…</span>
       </div>
-      <p class="map-help" id="mapMessage" role="status">Toque em um marcador ou escolha uma atração na lista. GPS requer sua autorização.</p>
+    </header>
+    <a class="hogwarts-link" href="../" aria-label="Voltar ao ParkPath Disney">← Voltar à Disney</a>
+
+    <nav class="park-selector" aria-label="Áreas de Harry Potter">
+      <span class="park-nav-title">O MUNDO BRUXO · 3 ÁREAS</span>
+      <div class="park-quick-actions" role="group" aria-label="Selecionar mundo de Harry Potter">
+        <button type="button" data-park="hogsmeade" data-resort="universal">🏰 Hogsmeade</button>
+        <button type="button" data-park="diagon" data-resort="universal">🪄 Beco Diagonal</button>
+        <button type="button" data-park="ministry" data-resort="universal">⚡ Ministério da Magia</button>
+      </div>
+      <select id="parkSelect" aria-label="Escolher área">
+        <option value="hogsmeade">Hogsmeade · Islands of Adventure</option>
+        <option value="diagon">Beco Diagonal · Universal Studios</option>
+        <option value="ministry">Ministério da Magia · Epic Universe</option>
+      </select>
+      <button id="queueOpenBtn" class="queue-open-btn" type="button">🎟️ Atrações e filas <span id="queueOpenHint">· consultar agora</span></button>
+      <a id="officialParkLink" href="https://www.universalorlando.com/web/en/us/theme-parks/islands-of-adventure/the-wizarding-world-of-harry-potter-hogsmeade" target="_blank" rel="noopener noreferrer">Informações oficiais ↗</a>
+    </nav>
+    <section class="search-box" aria-label="Buscar experiências de Harry Potter">
+      <label for="attractionSearch">Harry Potter</label>
+      <input id="attractionSearch" type="search" placeholder="Buscar atração no mapa" autocomplete="off" />
+      <div id="searchResults" class="search-results" role="listbox" aria-label="Resultados da busca"></div>
+    </section>
+
+    <section id="gpsCard" class="gps-card">
+      <div><strong id="gpsState">Buscando GPS…</strong></div>
+      <div id="parkState" class="park-state">Mapa de Hogsmeade</div>
+      <div class="gps-meta">
+        <span id="accuracyText">Precisão: —</span>
+        <span id="speedText">Velocidade: —</span>
+      </div>
+      <a class="geocode-credit" href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener noreferrer">Nomes de locais: OpenStreetMap/Nominatim</a>
+    </section>
+
+    <div class="controls" aria-label="Controles de navegação">
+      <button id="parkBtn" class="map-btn park-btn" type="button" title="Voltar à área de Harry Potter" aria-label="Ir ao Magic Kingdom"><span class="control-icon">🏰</span><span class="control-label">Área</span></button>
+      <button id="plannerOpenBtn" class="map-btn" type="button" title="Planejar rota a pé" aria-label="Planejar rota"><span class="control-icon">↗</span><span class="control-label">Rotas</span></button>
+      <button id="followBtn" class="map-btn active" type="button" aria-pressed="true" title="Seguir meus movimentos" aria-label="Seguir meus movimentos"><span class="control-icon">◎</span><span class="control-label">Seguir</span></button>
+      <button id="locateBtn" class="map-btn" type="button" title="Mostrar minha localização" aria-label="Mostrar minha localização"><span class="control-icon">⌖</span><span class="control-label">Meu GPS</span></button>
     </div>
-    <aside class="list-pane">
-      <div class="section-heading"><span class="small-caps">GUIA DE ATRAÇÕES</span><h2>Escolha sua aventura</h2><p id="fetchStatus" role="status">Consultando catálogo e filas…</p></div>
-      <div class="list-tools"><input id="search" type="search" placeholder="Buscar experiência…" autocomplete="off" aria-label="Buscar experiência"><select id="sort" aria-label="Ordenar atrações"><option value="official">Ordem do guia</option><option value="short">Menor fila</option><option value="long">Maior fila</option></select></div>
-      <div id="rideList" class="ride-list" aria-live="polite"></div>
-      <div class="source-note">
-        <strong>Sobre as informações</strong>
-        <p>Os minutos representam a estimativa da fila comum informada pela <a href="https://www.themeparks.wiki/" target="_blank" rel="noopener noreferrer">ThemeParks.wiki</a>, que não é uma API oficial da Universal. Leituras com mais de 12 minutos não aparecem como atuais. Sem coordenadas verificadas, não exibimos marcador. Os caminhos a pé dependem do OpenStreetMap e podem não refletir passagens ou restrições internas.</p>
-        <p>O <a href="https://www.universalorlando.com/web/en/us/things-to-do/rides-attractions/hogwarts-express" target="_blank" rel="noopener noreferrer">Hogwarts Express</a> exige ingresso Park-to-Park para viajar entre os dois parques. Confira no aplicativo oficial antes de se deslocar.</p>
+    <div id="mapNotice" class="map-notice" role="status">Explore Hogwarts. Permita a localização para acompanhar seu GPS.</div>
+
+    <section id="attractionCard" class="attraction-card hidden" aria-live="polite">
+      <button id="closeAttraction" class="close-attraction" aria-label="Fechar atração">×</button>
+      <div class="card-eyebrow"><span id="attractionParkName">Hogsmeade</span> · <span id="attractionArea"></span></div>
+      <h2 id="attractionName"></h2>
+      <div id="attractionQueueInfo" class="attraction-queue-info" role="status">Fila: aguardando atualização…</div>
+      <p id="attractionDistance"></p>
+      <small>Marcador aproximado da atração; não indica a entrada ou uma rota a pé.</small>
+      <a id="attractionSource" class="attraction-source" target="_blank" rel="noopener noreferrer">Fonte do ponto</a>
+      <button id="planAttractionBtn" class="plan-attraction-btn" type="button">Traçar rota até esta atração</button>
+      <div class="route-actions">
+        <button id="testOriginBtn" type="button">Escolher origem de teste</button>
+        <button id="useGpsBtn" type="button" class="route-quiet hidden">Usar GPS real</button>
+        <button id="routeBtn" type="button">Prévia da rota a pé</button>
       </div>
-    </aside>
-  </section>
-  <section class="selected-card" id="selectedPanel" hidden aria-label="Atração escolhida">
-    <div><span class="small-caps">DESTINO SELECIONADO</span><h2 id="selectedName">—</h2><p id="selectedMeta">—</p></div>
-    <a id="selectedOfficial" href="https://www.universalorlando.com/" rel="noopener noreferrer" target="_blank">Detalhes oficiais ↗</a>
-  </section>
-</main>
-<footer>Projeto independente de fãs para navegação e planejamento. Harry Potter e Universal são marcas de seus respectivos titulares. <a href="../">ParkPath Disney →</a></footer>
-</div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="./app.js?v=hogwarts-audit-v1"></script>
+      <p id="routeStatus" class="route-status" role="status">Selecione uma origem no parque para testar a rota daqui.</p>
+      <div id="routeSummary" class="route-summary hidden"></div>
+      <div class="route-credit">Ao pedir a rota, os dois pontos são enviados ao <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noopener noreferrer">OSRM/FOSSGIS</a>. Dados © OpenStreetMap · <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Corrigir o mapa</a></div>
+    </section>
+
+
+    <section id="routePlannerPanel" class="route-planner hidden" aria-label="Planejador de trajetos a pé">
+      <div class="planner-top">
+        <div><span class="planner-overline">PARKPATH · MAPAS</span><h2>Planejar caminhada</h2></div>
+        <button id="plannerCloseBtn" class="planner-close" type="button" aria-label="Fechar planejador">×</button>
+      </div>
+      <p id="plannerMessage" class="planner-message" role="status">Escolha a partida e o destino em qualquer lugar do mapa.</p>
+      <div class="planner-point">
+        <div class="planner-point-head"><span class="planner-circle origin">A</span><div><strong>Partida</strong><span id="plannerOriginLabel">Não selecionada</span></div></div>
+        <div class="planner-point-actions">
+          <button id="pickOriginBtn" type="button">Marcar A no mapa</button>
+          <button id="useGpsOriginBtn" type="button" class="planner-secondary">Usar meu GPS</button>
+        </div>
+      </div>
+      <div class="planner-point">
+        <div class="planner-point-head"><span class="planner-circle destination">B</span><div><strong>Destino</strong><span id="plannerDestinationLabel">Não selecionado</span></div></div>
+        <div class="planner-point-actions">
+          <button id="pickDestinationBtn" type="button">Marcar B no mapa</button>
+        </div>
+      </div>
+      <div class="planner-place-search">
+        <label for="plannerSearch">Ir para outra cidade ou endereço (opcional)</label>
+        <div class="planner-search-row">
+          <input id="plannerSearch" type="search" placeholder="Ex.: Centro, Duque de Caxias" autocomplete="off">
+          <button id="plannerSearchBtn" type="button">Buscar</button>
+        </div>
+        <small>Depois de localizar o lugar, toque no mapa para definir A ou B.</small>
+      </div>
+      <div id="plannerMetrics" class="planner-metrics hidden">
+        <div><strong id="plannerWalkMinutes">—</strong><span>tempo a pé</span></div>
+        <div><strong id="plannerWalkDistance">—</strong><span>pela rota</span></div>
+      </div>
+      <div class="planner-bottom-actions">
+        <button id="plannerCalculateBtn" class="planner-primary" type="button">Calcular caminhada</button>
+        <button id="plannerResetBtn" class="planner-secondary" type="button">Limpar</button>
+      </div>
+      <p class="planner-footnote">Tempo aproximado a 4,5 km/h sem paradas. Caminhos obtidos por OpenStreetMap/FOSSGIS; acesso, segurança e bloqueios precisam ser confirmados no local.</p>
+    </section>
+
+    <section id="queuePanel" class="queue-panel hidden" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="queueHeading">
+      <div class="queue-head">
+        <div><small>HARRY POTTER · ATRAÇÕES E SHOWS</small><h2 id="queueHeading">Estimativas de espera</h2><p id="queueParkHeading">Hogsmeade</p></div>
+        <button id="queueCloseBtn" type="button" aria-label="Fechar painel">×</button>
+      </div>
+      <p id="queueStatus" role="status" class="queue-status">Consultando a fonte…</p>
+      <div class="queue-legend" aria-label="Legenda das cores de espera"><span class="wait-low"><i></i> Até 20 min</span><span class="wait-medium"><i></i> 25–50 min</span><span class="wait-high"><i></i> 60+ min</span><span class="wait-between"><i></i> Outras esperas</span></div>
+      <div class="queue-filter">
+        <input id="queueSearch" type="search" placeholder="Buscar brinquedo ou atração" aria-label="Buscar atração" autocomplete="off">
+        <select id="queueSort" aria-label="Ordenar filas"><option value="name">A–Z</option><option value="short">Menor fila</option><option value="long">Maior fila</option></select>
+      </div>
+      <div id="queueList" class="queue-list" aria-live="polite"></div>
+      <div class="queue-foot">
+        <button id="queueRefreshBtn" type="button">Atualizar filas</button>
+        <p>As experiências de Harry Potter estão no guia. Somente as que possuem coordenadas verificadas recebem pino; o ponto pode não ser a entrada. Filas comuns (standby) são estimativas atuais, não previsões futuras. Leituras com mais de 12 minutos não mostram números.</p>
+        <p>O <a href="https://www.universalorlando.com/web/en/us/things-to-do/rides-attractions/hogwarts-express" target="_blank" rel="noopener noreferrer">Hogwarts Express</a> exige ingresso Park-to-Park para viajar entre Islands of Adventure e Universal Studios Florida.</p>
+        <p><a href="https://www.themeparks.wiki/" target="_blank" rel="noopener noreferrer">Powered by ThemeParks.wiki</a> · Fonte independente dos operadores. Confira os aplicativos oficiais <a href="https://www.universalorlando.com/web/en/us" target="_blank" rel="noopener noreferrer">Universal Orlando</a> antes de decidir.</p>
+      </div>
+    </section>
+    <div id="permissionPanel" class="permission-panel hidden">
+      <h1>Ativar localização</h1>
+      <p>Permita o acesso para acompanhar seu movimento. Você pode explorar Harry Potter mesmo sem GPS.</p>
+      <button id="retryBtn">Usar minha localização</button>
+      <button id="exploreBtn" class="secondary-btn">Explorar Hogsmeade</button>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="./app.js?v=hogwarts-map-v2"></script>
+  <script src="./queues.js?v=queue-colors-v2"></script>
 </body>
 </html>

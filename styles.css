@@ -466,3 +466,31 @@ html,body,#app,#map{height:100%;height:100dvh}
  #app .park-selector{top:calc(max(12px,env(safe-area-inset-top)) + 214px)!important}
  #app .search-box{top:calc(max(12px,env(safe-area-inset-top)) + 475px)!important}
 }
+
+
+/* Espera por cores: <=20 verde; 25–50 amarelo; >=60 vermelho.
+   21–24 e 51–59 usam cinza neutro; dados antigos/ausentes nunca recebem cor positiva. */
+#app .park-ride-pin.wait-low{background:#168043;color:#fff}
+#app .park-ride-pin.wait-medium{background:#f1c43d;color:#1c261d}
+#app .park-ride-pin.wait-high{background:#ba343b;color:#fff}
+#app .park-ride-pin.wait-between{background:#536175;color:#fff}
+#app .park-ride-pin.wait-unknown{background:#465064;color:#fff}
+#app .queue-row.wait-low{background:#e7f8eb;border:1px solid #a5ddb5}
+#app .queue-row.wait-medium{background:#fff5cc;border:1px solid #ead27a}
+#app .queue-row.wait-high{background:#ffebeb;border:1px solid #eda8ac}
+#app .queue-row.wait-between,#app .queue-row.wait-unknown{background:#f1f3f6;border:1px solid #dbe0e7}
+#app .queue-wait.wait-low{color:#116732}
+#app .queue-wait.wait-medium{color:#715100}
+#app .queue-wait.wait-high{color:#a3242b}
+#app .queue-wait.wait-between,#app .queue-wait.wait-unknown{color:#596579}
+#app .attraction-queue-info.wait-low{background:#e7f8eb;color:#116732}
+#app .attraction-queue-info.wait-medium{background:#fff5cc;color:#715100}
+#app .attraction-queue-info.wait-high{background:#ffebeb;color:#a3242b}
+#app .attraction-queue-info.wait-between,#app .attraction-queue-info.wait-unknown{background:#ecf0f4;color:#526174}
+#app .queue-legend{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 14px}
+#app .queue-legend span{font-size:11px;font-weight:750;display:inline-flex;gap:6px;align-items:center;border:1px solid #d5dce5;border-radius:18px;padding:6px 9px;background:#fff}
+#app .queue-legend i{display:inline-block;width:11px;height:11px;border-radius:3px}
+#app .queue-legend .wait-low i{background:#168043}
+#app .queue-legend .wait-medium i{background:#f1c43d}
+#app .queue-legend .wait-high i{background:#ba343b}
+#app .queue-legend .wait-between i{background:#536175}
