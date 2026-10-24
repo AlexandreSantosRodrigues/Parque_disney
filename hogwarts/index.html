@@ -8,8 +8,9 @@
   <title>Estou em Hogwarts — mapa das atrações</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="../styles.css?v=mobile-fast-v3" />
-  <link rel="stylesheet" href="./styles.css?v=mobile-fast-v3" />
+  <link rel="stylesheet" href="../styles.css?v=mobile-layout-v4" />
+  <link rel="stylesheet" href="./styles.css?v=mobile-layout-v4" />
+  <link rel="stylesheet" href="../mobile-ui.css?v=mobile-layout-v4" />
 </head>
 <body>
   <main id="app">
@@ -19,12 +20,21 @@
       <div class="brand">⚡ Hogwarts</div>
       <div id="placeBadge" class="place-badge" title="Localização atual">
         <span class="place-dot"></span>
-        <span id="placeName">Localizando…</span>
+        <span id="placeName">GPS desligado</span>
       </div>
     </header>
     <a class="hogwarts-link" href="../" aria-label="Voltar ao ParkPath Disney">← Voltar à Disney</a>
 
-    <nav class="park-selector" aria-label="Áreas de Harry Potter">
+
+    <!-- Compact mobile layout: the full-sized controls remain behind Ferramentas. -->
+    <div class="mobile-toolbar" aria-label="Atalhos do mapa no celular">
+      <button id="mobileParkToggle" type="button" aria-expanded="false" aria-controls="parkSelector" aria-label="Escolher área do mundo bruxo">▾ <span id="mobileActivePark">Hogsmeade</span></button>
+      <button id="mobileSearchToggle" type="button" aria-expanded="false" aria-controls="attractionSearchBox">⌕ Buscar</button>
+      <button id="mobileQueueToggle" type="button" aria-controls="queuePanel">⏱ Filas</button>
+    </div>
+    <button id="mobileScrim" class="mobile-scrim" type="button" tabindex="-1" aria-label="Fechar menu aberto"></button>
+    <button id="mobileToolsToggle" class="mobile-tools-toggle" type="button" aria-expanded="false" aria-controls="mapControls">☰ Ferr.</button>
+    <nav id="parkSelector" class="park-selector" aria-label="Áreas de Harry Potter">
       <span class="park-nav-title">O MUNDO BRUXO · 3 ÁREAS</span>
       <div class="park-quick-actions" role="group" aria-label="Selecionar mundo de Harry Potter">
         <button type="button" data-park="hogsmeade" data-resort="universal">🏰 Hogsmeade</button>
@@ -39,14 +49,14 @@
       <button id="queueOpenBtn" class="queue-open-btn" type="button">🎟️ Atrações e filas <span id="queueOpenHint">· consultar agora</span></button>
       <a id="officialParkLink" href="https://www.universalorlando.com/web/en/us/theme-parks/islands-of-adventure/the-wizarding-world-of-harry-potter-hogsmeade" target="_blank" rel="noopener noreferrer">Informações oficiais ↗</a>
     </nav>
-    <section class="search-box" aria-label="Buscar experiências de Harry Potter">
+    <section id="attractionSearchBox" class="search-box" aria-label="Buscar experiências de Harry Potter">
       <label for="attractionSearch">Harry Potter</label>
       <input id="attractionSearch" type="search" placeholder="Buscar atração no mapa" autocomplete="off" />
       <div id="searchResults" class="search-results" role="listbox" aria-label="Resultados da busca"></div>
     </section>
 
     <section id="gpsCard" class="gps-card">
-      <div><strong id="gpsState">Buscando GPS…</strong></div>
+      <div><strong id="gpsState">GPS desligado · toque em Meu GPS</strong></div>
       <div id="parkState" class="park-state">Mapa de Hogsmeade</div>
       <div class="gps-meta">
         <span id="accuracyText">Precisão: —</span>
@@ -55,8 +65,8 @@
       <a class="geocode-credit" href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener noreferrer">Nomes de locais: OpenStreetMap/Nominatim</a>
     </section>
 
-    <div class="controls" aria-label="Controles de navegação">
-      <button id="parkBtn" class="map-btn park-btn" type="button" title="Voltar à área de Harry Potter" aria-label="Ir ao Magic Kingdom"><span class="control-icon">🏰</span><span class="control-label">Área</span></button>
+    <div id="mapControls" class="controls" aria-label="Controles de navegação">
+      <button id="parkBtn" class="map-btn park-btn" type="button" title="Voltar à área de Harry Potter" aria-label="Voltar à área de Harry Potter"><span class="control-icon">🏰</span><span class="control-label">Área</span></button>
       <button id="plannerOpenBtn" class="map-btn" type="button" title="Planejar rota a pé" aria-label="Planejar rota"><span class="control-icon">↗</span><span class="control-label">Rotas</span></button>
       <button id="followBtn" class="map-btn" type="button" aria-pressed="false" title="Seguir meus movimentos" aria-label="Seguir meus movimentos"><span class="control-icon">◎</span><span class="control-label">Seguir</span></button>
       <button id="locateBtn" class="map-btn" type="button" title="Mostrar minha localização" aria-label="Mostrar minha localização"><span class="control-icon">⌖</span><span class="control-label">Meu GPS</span></button>
@@ -149,7 +159,8 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="./app.js?v=mobile-fast-v3"></script>
-  <script src="./queues.js?v=mobile-fast-v3"></script>
+  <script src="./app.js?v=mobile-layout-v4"></script>
+  <script src="./queues.js?v=mobile-layout-v4"></script>
+  <script src="../mobile-ui.js?v=mobile-layout-v4"></script>
 </body>
 </html>

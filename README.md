@@ -85,3 +85,19 @@ A mesma experiência de atrações e tempos de espera se aplica agora a todos os
 ## Performance no celular — versão mobile-fast-v3
 
 Foi feita uma [auditoria técnica de desempenho](PERFORMANCE_AUDIT_2026-10-18.md) de Disney e Hogwarts com correções de redesenho da lista fechada, cache de catálogos, pinos apenas na área visível, GPS menos exigente e animações/blur reduzidos no celular. O mapa inicia no parque (botões Seguir/Meu GPS continuam ativos para ir à localização real). Não há medições de FPS em telefone físico; o relatório diferencia testes simulados de validação real.
+
+## Correção de interface móvel — 24/10/2026
+
+O layout anterior tinha uma regressão de CSS: regras gerais do ParkPath aplicavam mínimos de **144px não só aos quatro controles de navegação, mas também ao logo, indicador de GPS, busca e cartão de localização**; somadas ao seletor de parques expandido e às posições absolutas independentes, cobriam quase toda a tela em celulares (reproduzido visualmente em captura enviada de um Samsung S26 Ultra).
+
+Agora os sites Disney e Hogwarts usam `mobile-ui.css` e `mobile-ui.js`, carregados **após todos os outros estilos e scripts**:
+
+- cabeçalho compacto e mapa visível em telas de até 760 CSS px;
+- menus **Áreas/Parques**, **Buscar** e **Filas** acessíveis numa barra compacta;
+- os **quatro botões originais continuam com 144 × 144 CSS px**, mas ficam numa bandeja **☰ Ferr.** fechada inicialmente, em vez de ocupar permanentemente grande parte do mapa;
+- indicador de GPS reduzido a uma linha, sem cartões de 144px sobre o mapa;
+- GPS inicia só quando o usuário solicita, evitando popups e consumo do sensor ao abrir o site;
+- alteração exclusivamente responsiva: o layout de desktop, filas, cores de espera e rotas permanecem presentes;
+- links **não mudaram**: `/Parque_disney/` e `/Parque_disney/hogwarts/`.
+
+O teste automatizado do menu verificou alternância exclusiva das três áreas, atualização do rótulo do parque e acesso ao painel de filas. O CSS foi validado estruturalmente e os arquivos JavaScript foram validados sintaticamente. É necessária uma inspeção visual real no Android para confirmar a aparência final.

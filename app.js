@@ -553,8 +553,6 @@ locateBtn.addEventListener('click', () => {
   startWatching(); // Navegação solicitada: ativa GPS de alta precisão.
   if (latestPosition) {
     flyToSmart([latestPosition.lat, latestPosition.lon], CONFIG.followZoom, { duration: 0.7 });
-  } else {
-    startWatching();
   }
 });
 
@@ -575,7 +573,8 @@ map.on('dragstart', () => {
   setFollow(false);
 });
 
-startWatching();
+// GPS só é iniciado quando a pessoa pede: evita permissões e popups
+// automáticos cobrindo o mapa na primeira visita, além de reduzir bateria.
 
 // Walt Disney World: mapas independentes; atrações cadastradas apenas no Magic Kingdom.
 function setPark(key, {moveMap=true} = {}) {

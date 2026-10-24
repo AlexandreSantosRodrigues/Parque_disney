@@ -8,7 +8,8 @@
   <title>ParkPath Disney — Walt Disney World</title>
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <link rel="stylesheet" href="./styles.css?v=mobile-fast-v3" />
+  <link rel="stylesheet" href="./styles.css?v=mobile-layout-v4" />
+  <link rel="stylesheet" href="./mobile-ui.css?v=mobile-layout-v4" />
 </head>
 <body>
   <main id="app">
@@ -18,12 +19,21 @@
       <div class="brand">ParkPath</div>
       <div id="placeBadge" class="place-badge" title="Localização atual">
         <span class="place-dot"></span>
-        <span id="placeName">Localizando…</span>
+        <span id="placeName">GPS desligado</span>
       </div>
     </header>
     <a class="hogwarts-link" href="./hogwarts/" aria-label="Abrir site independente de Harry Potter">⚡ Estou em Hogwarts</a>
 
-    <nav class="park-selector" aria-label="Parques Walt Disney World">
+
+    <!-- Compact mobile layout: the full-sized controls remain behind Ferramentas. -->
+    <div class="mobile-toolbar" aria-label="Atalhos do mapa no celular">
+      <button id="mobileParkToggle" type="button" aria-expanded="false" aria-controls="parkSelector" aria-label="Escolher parque Disney">▾ <span id="mobileActivePark">Magic Kingdom</span></button>
+      <button id="mobileSearchToggle" type="button" aria-expanded="false" aria-controls="attractionSearchBox">⌕ Buscar</button>
+      <button id="mobileQueueToggle" type="button" aria-controls="queuePanel">⏱ Filas</button>
+    </div>
+    <button id="mobileScrim" class="mobile-scrim" type="button" tabindex="-1" aria-label="Fechar menu aberto"></button>
+    <button id="mobileToolsToggle" class="mobile-tools-toggle" type="button" aria-expanded="false" aria-controls="mapControls">☰ Ferr.</button>
+    <nav id="parkSelector" class="park-selector" aria-label="Parques Walt Disney World">
       <span class="park-nav-title">WALT DISNEY WORLD · 4 PARQUES</span>
       <div class="park-quick-actions" role="group" aria-label="Escolher parque Disney">
         <button type="button" data-park="magic" data-resort="disney">Magic Kingdom</button>
@@ -40,14 +50,14 @@
       <button id="queueOpenBtn" class="queue-open-btn" type="button">🎟️ Atrações e filas <span id="queueOpenHint">· consultar agora</span></button>
       <a id="officialParkLink" href="https://disneyworld.disney.go.com/pt-br/destinations/magic-kingdom/" target="_blank" rel="noopener noreferrer">Informações oficiais ↗</a>
     </nav>
-    <section class="search-box" aria-label="Buscar atrações do Magic Kingdom">
+    <section id="attractionSearchBox" class="search-box" aria-label="Buscar atrações do Magic Kingdom">
       <label for="attractionSearch">Atrações</label>
       <input id="attractionSearch" type="search" placeholder="Buscar atração no mapa" autocomplete="off" />
       <div id="searchResults" class="search-results" role="listbox" aria-label="Resultados da busca"></div>
     </section>
 
     <section id="gpsCard" class="gps-card">
-      <div><strong id="gpsState">Buscando GPS…</strong></div>
+      <div><strong id="gpsState">GPS desligado · toque em Meu GPS</strong></div>
       <div id="parkState" class="park-state">Mapa do Magic Kingdom</div>
       <div class="gps-meta">
         <span id="accuracyText">Precisão: —</span>
@@ -56,7 +66,7 @@
       <a class="geocode-credit" href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener noreferrer">Nomes de locais: OpenStreetMap/Nominatim</a>
     </section>
 
-    <div class="controls" aria-label="Controles de navegação">
+    <div id="mapControls" class="controls" aria-label="Controles de navegação">
       <button id="parkBtn" class="map-btn park-btn" type="button" title="Ir ao Magic Kingdom" aria-label="Ir ao Magic Kingdom"><span class="control-icon">🏰</span><span class="control-label">Disney</span></button>
       <button id="plannerOpenBtn" class="map-btn" type="button" title="Planejar rota a pé" aria-label="Planejar rota"><span class="control-icon">↗</span><span class="control-label">Rotas</span></button>
       <button id="followBtn" class="map-btn" type="button" aria-pressed="false" title="Seguir meus movimentos" aria-label="Seguir meus movimentos"><span class="control-icon">◎</span><span class="control-label">Seguir</span></button>
@@ -149,7 +159,8 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script src="./app.js?v=mobile-fast-v3"></script>
-  <script src="./queues.js?v=mobile-fast-v3"></script>
+  <script src="./app.js?v=mobile-layout-v4"></script>
+  <script src="./queues.js?v=mobile-layout-v4"></script>
+  <script src="./mobile-ui.js?v=mobile-layout-v4"></script>
 </body>
 </html>
